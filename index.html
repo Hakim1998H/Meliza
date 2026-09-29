@@ -157,6 +157,18 @@
   }
   .record b{font-variant-numeric:tabular-nums;font-size:1.05rem}
 
+  /* petit lien discret sous le meilleur score, sur l'écran d'accueil */
+  .lienDiscret{
+    display:block;margin:9px auto 0;
+    padding:3px 6px;border:0;background:none;
+    color:var(--encre);opacity:.42;
+    font:inherit;font-size:.72rem;font-weight:600;
+    text-decoration:underline;text-underline-offset:2px;
+    cursor:pointer;touch-action:manipulation;
+  }
+  .lienDiscret:hover{opacity:.75}
+  .lienDiscret:focus-visible{opacity:.95;outline:2px solid #2f6b1c;outline-offset:2px}
+
   .scoreFin{
     font-size:4.6rem;font-weight:800;line-height:1;
     font-variant-numeric:tabular-nums;
@@ -238,6 +250,7 @@
     </div>
     <button class="bouton" id="btnJouer" type="button">Jouer</button>
     <div class="record">🏆 Meilleur score : <b id="recordAccueil">0</b></div>
+    <button class="lienDiscret" id="btnReinitRecord" type="button">Réinitialiser le meilleur score</button>
   </div>
 </div>
 
@@ -391,6 +404,7 @@
   var btnJouer  = document.getElementById('btnJouer');
   var btnRejouer= document.getElementById('btnRejouer');
   var btnSon    = document.getElementById('btnSon');
+  var btnReinitRecord = document.getElementById('btnReinitRecord');
 
   // ------------------------------------------------------------------
   //  Sons (Web Audio : aucun fichier externe)
@@ -1745,6 +1759,16 @@
 
   btnJouer.addEventListener('click', demarrer);
   btnRejouer.addEventListener('click', demarrer);
+
+  // Remise à zéro du meilleur score, depuis l'écran d'accueil
+  btnReinitRecord.addEventListener('click', function () {
+    if (!window.confirm('Remettre le meilleur score à zéro ?')) return;
+    record = 0;
+    ecrireRecord(0);
+    elRecordAccueil.textContent = '0';
+    elRecordFin.textContent = '0';
+  });
+
   window.addEventListener('resize', redimensionner);
   window.addEventListener('orientationchange', function () {
     window.setTimeout(redimensionner, 120);

@@ -3,7 +3,7 @@
    fonctionne hors-ligne, tout en se mettant à jour à la visite suivante.
    Tous les chemins sont relatifs, l'appli peut donc vivre dans un sous-dossier. */
 
-var VERSION = 'meliza-v2';
+var VERSION = 'meliza-v3';
 var FICHIERS = [
   './',
   'index.html',
