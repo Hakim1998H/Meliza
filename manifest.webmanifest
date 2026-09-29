@@ -1,7 +1,7 @@
 {
   "name": "Meliza la vache gourmande",
   "short_name": "Meliza",
-  "description": "Guide Meliza du bout du doigt sur le pré et mange un maximum de touffes d'herbe en 60 secondes.",
+  "description": "Guide Meliza du bout du doigt sur le pré et mange un maximum de touffes d'herbe en 60 secondes, en évitant cailloux et clôtures.",
   "lang": "fr",
   "dir": "ltr",
   "start_url": "./",

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Meliza la vache gourmande</title>
-<meta name="description" content="Guide Meliza du bout du doigt sur le pré et mange un maximum de touffes d'herbe en 60 secondes.">
+<meta name="description" content="Guide Meliza du bout du doigt sur le pré et mange un maximum de touffes d'herbe en 60 secondes, en évitant cailloux et clôtures.">
 <meta name="theme-color" content="#4c9a2a">
 <meta name="color-scheme" content="light">
 <meta name="mobile-web-app-capable" content="yes">
@@ -21,6 +21,7 @@
     --or:#ffd166;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none !important}
   html,body{height:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none}
   body{
     background:#4c9a2a;
@@ -53,10 +54,13 @@
     font-size:1.35rem;font-weight:800;
     font-variant-numeric:tabular-nums;
     box-shadow:0 3px 0 rgba(46,39,37,.22);
-    transition:background .2s,border-color .2s,color .2s;
+    transition:background .2s,border-color .2s,color .2s,box-shadow .25s;
   }
   .pastille small{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.55}
   #pastilleChrono.alerte{background:#ffe2e2;border-color:#c0392b;color:#c0392b;animation:battement .7s ease-in-out infinite}
+  #pastilleChrono.perte{background:#ffd9d9;border-color:#c0392b;color:#c0392b;box-shadow:0 0 0 7px rgba(192,57,43,.25)}
+  #pastilleScore.gain{background:#fff3cf;border-color:#d99a1f;color:#a5700f;box-shadow:0 0 0 7px rgba(255,209,102,.4)}
+  #pastilleScore.perte{background:#ffd9d9;border-color:#c0392b;color:#c0392b;box-shadow:0 0 0 7px rgba(192,57,43,.25)}
   @keyframes battement{50%{transform:scale(1.07)}}
 
   #jauge{
@@ -77,11 +81,34 @@
     transform-origin:left center;
   }
 
+  /* ---------------- Bouton du son ---------------- */
+  #btnSon{
+    position:fixed;
+    z-index:30;
+    top:calc(env(safe-area-inset-top,0px) + 10px);
+    left:50%;
+    transform:translateX(-50%);
+    width:44px;height:44px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.15rem;line-height:1;
+    background:rgba(255,253,247,.93);
+    border:2px solid rgba(46,39,37,.85);
+    border-radius:999px;
+    box-shadow:0 3px 0 rgba(46,39,37,.22);
+    cursor:pointer;
+    touch-action:manipulation;
+    transition:background .2s,opacity .2s,box-shadow .07s ease;
+  }
+  #btnSon:active{transform:translateX(-50%) scale(.92)}
+  #btnSon:focus-visible{outline:3px solid #2f6b1c;outline-offset:3px}
+  #btnSon.eteint{background:rgba(255,253,247,.6);opacity:.72}
+
   /* ---------------- Écrans ---------------- */
   .ecran{
     position:fixed;inset:0;z-index:10;
     display:flex;align-items:center;justify-content:center;
-    padding:calc(env(safe-area-inset-top,0px) + 20px) 20px calc(env(safe-area-inset-bottom,0px) + 20px);
+    padding:calc(env(safe-area-inset-top,0px) + 70px) 20px calc(env(safe-area-inset-bottom,0px) + 20px);
+    overflow-y:auto;
     background:radial-gradient(130% 100% at 50% 0%,rgba(47,107,28,.30),rgba(18,44,8,.75));
     -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
     animation:apparition .25s ease-out;
@@ -91,6 +118,7 @@
 
   .carte{
     width:100%;max-width:400px;
+    margin:auto;
     background:var(--creme);
     border:3px solid var(--encre);
     border-radius:28px;
@@ -101,8 +129,11 @@
   .vache{font-size:3.4rem;line-height:1;margin-bottom:6px}
   h1{font-size:1.55rem;margin:0 0 10px;line-height:1.15;letter-spacing:-.01em}
   h1 span{display:block;font-size:.95rem;font-weight:700;opacity:.6;letter-spacing:.02em;margin-top:4px}
-  .regle{font-size:.98rem;line-height:1.5;margin:0 0 18px;opacity:.8}
+  .regle{font-size:.95rem;line-height:1.45;margin:0 0 14px;opacity:.85;text-align:left}
   .regle b{background:linear-gradient(180deg,transparent 62%,#ffe08a 62%);padding:0 2px}
+  .regle li{margin:0 0 5px}
+  .regle ul{margin:0;padding-left:1.15em}
+  .astuce{font-size:.88rem;opacity:.65;margin:0 0 18px;text-align:left}
 
   .bouton{
     font:inherit;font-size:1.25rem;font-weight:800;
@@ -132,14 +163,51 @@
     color:#2f6b1c;
     margin:4px 0 2px;
   }
+  .carte.fete .scoreFin{font-size:3.3rem}
   .etiquette{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:.5}
   #messageRecord{
-    margin:14px auto 0;display:inline-block;
+    margin:12px auto 0;display:inline-block;
     padding:7px 16px;border-radius:999px;
     background:#ffe08a;font-weight:800;font-size:.95rem;
     animation:battement 1.1s ease-in-out infinite;
   }
   .actions{margin-top:22px}
+
+  /* ---------------- Hakim ---------------- */
+  .hakim{margin:10px 0 0}
+  .hakim svg{display:block;width:180px;max-width:52vw;height:auto;margin:0 auto}
+  .hakimTexte{
+    margin:6px 0 0;font-size:.95rem;line-height:1.4;
+    padding:10px 12px;border-radius:16px;background:#fff3cf;
+  }
+  .hakimTexte b{color:#a5700f}
+  /* écran de fin version « fête » : plus compact pour tenir sur un petit écran */
+  .carte.fete{padding:16px 18px 18px}
+  .carte.fete .hakim{margin-top:6px}
+  .carte.fete .hakim svg{width:138px}
+  .carte.fete .hakimTexte{font-size:.84rem;padding:8px 10px}
+  .carte.fete .record{margin-top:10px;padding:6px 14px;font-size:.85rem}
+  .carte.fete .actions{margin-top:14px}
+  .carte.fete .bouton{font-size:1.1rem;padding:12px 28px}
+
+  .hkBouteille{transform-box:view-box;transform-origin:52px 150px;animation:hkBoit 2.6s ease-in-out infinite}
+  @keyframes hkBoit{0%,100%{transform:rotate(20deg)}45%{transform:rotate(29deg)}}
+  .hkMoustache{transform-box:view-box;transform-origin:90px 90px;animation:hkMoustache 1.3s ease-in-out infinite}
+  @keyframes hkMoustache{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.78)}}
+  .hkGoutte{transform-box:fill-box;transform-origin:center;animation:hkGoutte 1.3s linear infinite}
+  @keyframes hkGoutte{0%{opacity:0;transform:translateY(-5px) scale(.7)}20%{opacity:1}70%{opacity:1}100%{opacity:0;transform:translateY(9px) scale(1.05)}}
+  .hkGoutte:nth-of-type(2){animation-delay:.43s}
+  .hkGoutte:nth-of-type(3){animation-delay:.87s}
+  .hkEclair{transform-box:fill-box;transform-origin:center;animation:hkBrille 1.8s ease-in-out infinite}
+  .hkEclair:nth-of-type(2){animation-delay:.6s}
+  .hkEclair:nth-of-type(3){animation-delay:1.2s}
+  @keyframes hkBrille{0%,100%{opacity:.2;transform:scale(.65)}50%{opacity:1;transform:scale(1.15)}}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001s !important;animation-iteration-count:1 !important}
+    .hkBouteille{transform:rotate(25deg)}
+    .hkGoutte{opacity:.9}
+  }
 </style>
 </head>
 <body>
@@ -147,20 +215,27 @@
 <canvas id="jeu" aria-label="Le pré de Meliza"></canvas>
 
 <div id="hud">
-  <div class="pastille"><span id="score">0</span><small>touffes</small></div>
+  <div class="pastille" id="pastilleScore"><span id="score">0</span><small>points</small></div>
   <div class="pastille" id="pastilleChrono"><span id="chrono">60</span><small>sec</small></div>
 </div>
 <div id="jauge"><div id="jaugeRemplissage"></div></div>
+
+<!-- Bouton du son : toujours accessible, même sur les écrans -->
+<button id="btnSon" type="button" aria-pressed="true" aria-label="Couper le son" title="Couper le son">🔊</button>
 
 <!-- Écran d'accueil -->
 <div class="ecran" id="ecranAccueil">
   <div class="carte">
     <div class="vache">🐄</div>
     <h1>Meliza la vache gourmande<span>60 secondes pour tout brouter</span></h1>
-    <p class="regle">
-      Glisse ton doigt sur le pré : <b>Meliza suit le bout de ton doigt</b>.
-      Chaque touffe d'herbe avalée rapporte <b>1 point</b> et la fait grossir un peu.
-    </p>
+    <div class="regle">
+      <ul>
+        <li>Glisse ton doigt : <b>Meliza suit le bout de ton doigt</b>.</li>
+        <li>L'herbe <b>fane de plus en plus vite</b> : mange sans traîner.</li>
+        <li>Les <b>touffes dorées</b> rapportent <b>5 points</b> au lieu d'1.</li>
+        <li>Évite les <b>cailloux</b> (−2 s) et les <b>clôtures</b> (−2 points).</li>
+      </ul>
+    </div>
     <button class="bouton" id="btnJouer" type="button">Jouer</button>
     <div class="record">🏆 Meilleur score : <b id="recordAccueil">0</b></div>
   </div>
@@ -168,11 +243,103 @@
 
 <!-- Écran de fin -->
 <div class="ecran cache" id="ecranFin">
-  <div class="carte">
+  <div class="carte" id="carteFin">
     <div class="etiquette">Temps écoulé</div>
     <div class="scoreFin" id="scoreFin">0</div>
-    <div class="etiquette">touffes broutées</div>
+    <div class="etiquette">points broutés</div>
     <div id="messageRecord" hidden>🎉 Nouveau record !</div>
+
+    <!-- Hakim n'apparaît que lorsqu'un nouveau record est établi -->
+    <div class="hakim" id="hakim" hidden>
+      <svg viewBox="0 0 180 186" role="img" aria-label="Hakim, moustachu, boit une bouteille du lait de Meliza">
+        <rect x="0" y="0" width="180" height="156" rx="18" fill="#e8f6dc"/>
+        <ellipse cx="90" cy="149" rx="52" ry="8" fill="#2e2725" opacity=".13"/>
+
+        <!-- étincelles -->
+        <path class="hkEclair" d="M34 42 l3.4 8.2 8.2 3.4 -8.2 3.4 -3.4 8.2 -3.4 -8.2 -8.2 -3.4 8.2 -3.4z" fill="#f7b733"/>
+        <path class="hkEclair" d="M147 66 l2.6 6.4 6.4 2.6 -6.4 2.6 -2.6 6.4 -2.6 -6.4 -6.4 -2.6 6.4 -2.6z" fill="#ffd166"/>
+        <path class="hkEclair" d="M150 112 l2.4 5.8 5.8 2.4 -5.8 2.4 -2.4 5.8 -2.4 -5.8 -5.8 -2.4 5.8 -2.4z" fill="#f7b733"/>
+
+        <!-- corps -->
+        <path d="M54 152 C54 122 68 108 90 108 C112 108 126 122 126 152 Z"
+              fill="#5b8fd6" stroke="#2e2725" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M78 108 h24 v-14 h-24 z" fill="#f2c49b" stroke="#2e2725" stroke-width="3" stroke-linejoin="round"/>
+
+        <!-- manche + main qui tient la bouteille -->
+        <path d="M68 120 C58 124 53 130 54 137" stroke="#5b8fd6" stroke-width="19" stroke-linecap="round" fill="none"/>
+        <path d="M68 120 C58 124 53 130 54 137" stroke="#2e2725" stroke-width="3" stroke-linecap="round" fill="none" opacity=".18"/>
+
+        <!-- tête -->
+        <g class="hkTete">
+          <circle cx="58" cy="76" r="8" fill="#f2c49b" stroke="#2e2725" stroke-width="3"/>
+          <circle cx="122" cy="76" r="8" fill="#f2c49b" stroke="#2e2725" stroke-width="3"/>
+          <circle cx="90" cy="72" r="33" fill="#f2c49b" stroke="#2e2725" stroke-width="3"/>
+
+          <!-- casquette -->
+          <path d="M59 62 C56 36 72 30 90 30 C110 30 124 38 121 62 Z"
+                fill="#c0392b" stroke="#2e2725" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M118 53 C135 51 145 58 145 64 C145 68 136 70 128 69 L117 67 Z"
+                fill="#a5301f" stroke="#2e2725" stroke-width="3" stroke-linejoin="round"/>
+          <circle cx="90" cy="31" r="4.5" fill="#8e2418" stroke="#2e2725" stroke-width="2"/>
+
+          <!-- sourcils -->
+          <path d="M70 58 q9 -6 18 -2" stroke="#3a2a22" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+          <path d="M110 58 q-9 -6 -18 -2" stroke="#3a2a22" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+
+          <!-- yeux -->
+          <circle cx="78" cy="70" r="3.8" fill="#2e2725"/>
+          <circle cx="102" cy="70" r="3.8" fill="#2e2725"/>
+          <circle cx="79.2" cy="68.8" r="1.3" fill="#fffdf7"/>
+          <circle cx="103.2" cy="68.8" r="1.3" fill="#fffdf7"/>
+
+          <!-- joues et nez -->
+          <circle cx="68" cy="83" r="7" fill="#f19a9a" opacity=".4"/>
+          <circle cx="112" cy="83" r="7" fill="#f19a9a" opacity=".4"/>
+          <path d="M90 66 q7 9 -2 13" stroke="#d99a6c" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+          <!-- bouche -->
+          <path d="M82 98 q8 7 16 0" stroke="#8e3b3b" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+          <!-- la moustache d'Hakim -->
+          <g class="hkMoustache">
+            <path d="M90 88 C78 78 62 82 56 92 C66 99 82 97 90 88 Z" fill="#3a2a22" stroke="#2e2725" stroke-width="2.6" stroke-linejoin="round"/>
+            <path d="M90 88 C102 78 118 82 124 92 C114 99 98 97 90 88 Z" fill="#3a2a22" stroke="#2e2725" stroke-width="2.6" stroke-linejoin="round"/>
+            <circle cx="56" cy="92" r="4" fill="#3a2a22" stroke="#2e2725" stroke-width="2.4"/>
+            <circle cx="124" cy="92" r="4" fill="#3a2a22" stroke="#2e2725" stroke-width="2.4"/>
+          </g>
+        </g>
+
+        <!-- bouteille de lait -->
+        <g class="hkBouteille">
+          <path d="M40 152 L40 118 Q40 110 48 106 L48 92 L56 92 L56 106 Q64 110 64 118 L64 152 Z"
+                fill="#dff0fb" stroke="#2e2725" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M43 152 L43 120 Q43 113 50 109 L50 104 L54 104 L54 109 Q61 113 61 120 L61 152 Z"
+                fill="#fffdf7"/>
+          <rect x="45" y="82" width="14" height="11" rx="2.5" fill="#cfe6f5" stroke="#2e2725" stroke-width="3"/>
+          <rect x="40" y="126" width="24" height="16" rx="3" fill="#ffd166" stroke="#2e2725" stroke-width="2.4"/>
+          <path d="M44 132 h16 M44 137 h10" stroke="#2e2725" stroke-width="2" stroke-linecap="round"/>
+        </g>
+
+        <!-- gouttes de lait -->
+        <g>
+          <ellipse class="hkGoutte" cx="80" cy="94" rx="2.6" ry="3.6" fill="#f7fcff" stroke="#7fb3d1" stroke-width="1.2"/>
+          <ellipse class="hkGoutte" cx="83" cy="96" rx="2.2" ry="3.1" fill="#f7fcff" stroke="#7fb3d1" stroke-width="1.2"/>
+          <ellipse class="hkGoutte" cx="86" cy="95" rx="1.9" ry="2.7" fill="#f7fcff" stroke="#7fb3d1" stroke-width="1.2"/>
+        </g>
+
+        <!-- main par-dessus la bouteille -->
+        <circle cx="54" cy="138" r="9" fill="#f2c49b" stroke="#2e2725" stroke-width="3"/>
+
+        <!-- le nom, bien visible -->
+        <rect x="42" y="161" width="96" height="24" rx="12" fill="#ffd166" stroke="#2e2725" stroke-width="2.6"/>
+        <text x="90" y="178" text-anchor="middle"
+              font-family="system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"
+              font-size="15" font-weight="800" fill="#2e2725">Hakim</text>
+      </svg>
+      <p class="hakimTexte"><b>Hakim</b>, le voisin moustachu, a débouché sa bouteille :
+        le lait de Meliza n'a jamais été aussi bon !</p>
+    </div>
+
     <div class="record">🏆 Meilleur score : <b id="recordFin">0</b></div>
     <div class="actions"><button class="bouton" id="btnRejouer" type="button">Rejouer</button></div>
   </div>
@@ -187,7 +354,19 @@
   // ------------------------------------------------------------------
   var DUREE_PARTIE = 60;          // secondes
   var CLE_RECORD   = 'meliza.record';
+  var CLE_SON      = 'meliza.son';
+
   var NB_TOUFFES   = 7;           // touffes présentes simultanément
+  var VIE_DEPART   = 7.5;         // secondes avant que l'herbe ne fane
+  var VIE_FIN      = 2.1;         // ... et à la fin de la partie
+  var CHANCE_DOREE = 0.12;        // proportion de touffes dorées
+  var POINTS_DOREE = 5;
+
+  var OBSTACLES_DEPART = 2;
+  var OBSTACLES_MAX    = 7;
+  var PENALITE_TEMPS   = 2;       // secondes perdues sur un caillou
+  var PENALITE_POINTS  = 2;       // points perdus sur une clôture
+
   var GAIN_TAILLE  = 0.045;       // grossissement par touffe (multiplicateur)
   var TAILLE_MAX   = 1.85;
 
@@ -199,15 +378,214 @@
   var elScore   = document.getElementById('score');
   var elChrono  = document.getElementById('chrono');
   var pastChrono= document.getElementById('pastilleChrono');
+  var pastScore = document.getElementById('pastilleScore');
   var elJauge   = document.getElementById('jaugeRemplissage');
   var ecranAccueil = document.getElementById('ecranAccueil');
   var ecranFin  = document.getElementById('ecranFin');
+  var carteFin  = document.getElementById('carteFin');
   var elRecordAccueil = document.getElementById('recordAccueil');
   var elRecordFin = document.getElementById('recordFin');
   var elScoreFin = document.getElementById('scoreFin');
   var elMessageRecord = document.getElementById('messageRecord');
+  var elHakim   = document.getElementById('hakim');
   var btnJouer  = document.getElementById('btnJouer');
   var btnRejouer= document.getElementById('btnRejouer');
+  var btnSon    = document.getElementById('btnSon');
+
+  // ------------------------------------------------------------------
+  //  Sons (Web Audio : aucun fichier externe)
+  // ------------------------------------------------------------------
+  var audio = null, gainMaitre = null, tamponBruit = null;
+  var sonActif = true;
+
+  function lireSon() {
+    try { return window.localStorage.getItem(CLE_SON) !== '0'; } catch (e) { return true; }
+  }
+  function ecrireSon(v) {
+    try { window.localStorage.setItem(CLE_SON, v ? '1' : '0'); } catch (e) {}
+  }
+
+  function ouvrirAudio() {
+    if (audio) return audio;
+    var C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return null;
+    try { audio = new C(); } catch (e) { audio = null; return null; }
+    gainMaitre = audio.createGain();
+    gainMaitre.gain.value = sonActif ? 0.55 : 0;
+    gainMaitre.connect(audio.destination);
+    return audio;
+  }
+
+  // À appeler depuis un geste de l'utilisateur (politique de lecture auto).
+  function reveillerAudio() {
+    var c = ouvrirAudio();
+    if (c && c.state === 'suspended' && c.resume) { try { c.resume(); } catch (e) {} }
+  }
+
+  function pret() { return audio && sonActif && audio.state === 'running'; }
+
+  function bruit() {
+    if (tamponBruit) return tamponBruit;
+    var n = Math.floor(audio.sampleRate * 0.25);
+    tamponBruit = audio.createBuffer(1, n, audio.sampleRate);
+    var d = tamponBruit.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    return tamponBruit;
+  }
+
+  function note(freq, t0, duree, volume, type) {
+    var o = audio.createOscillator();
+    var g = audio.createGain();
+    o.type = type || 'triangle';
+    o.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(volume, t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + duree);
+    o.connect(g); g.connect(gainMaitre);
+    o.start(t0); o.stop(t0 + duree + 0.03);
+  }
+
+  // « Croc » de la bouchée : bruit filtré + petit corps grave.
+  function sonCroc(doree) {
+    if (!pret()) return;
+    var c = audio, t = c.currentTime;
+
+    var src = c.createBufferSource();
+    src.buffer = bruit(); src.loop = true;
+    var bp = c.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = doree ? 1900 : 850 + Math.random() * 550;
+    bp.Q.value = 1.1;
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(doree ? 0.3 : 0.22, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.11);
+    src.connect(bp); bp.connect(g); g.connect(gainMaitre);
+    src.start(t); src.stop(t + 0.14);
+
+    var o = c.createOscillator();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(doree ? 330 : 200, t);
+    o.frequency.exponentialRampToValueAtTime(doree ? 150 : 78, t + 0.1);
+    var og = c.createGain();
+    og.gain.setValueAtTime(0.0001, t);
+    og.gain.exponentialRampToValueAtTime(doree ? 0.24 : 0.17, t + 0.01);
+    og.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
+    o.connect(og); og.connect(gainMaitre);
+    o.start(t); o.stop(t + 0.15);
+
+    if (doree) {                       // petite clochette dorée
+      note(1568, t + 0.02, 0.3, 0.13, 'sine');
+      note(2093, t + 0.06, 0.34, 0.1, 'sine');
+    }
+  }
+
+  function sonCaillou() {
+    if (!pret()) return;
+    var c = audio, t = c.currentTime;
+    var o = c.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(150, t);
+    o.frequency.exponentialRampToValueAtTime(44, t + 0.22);
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.34, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.26);
+    o.connect(g); g.connect(gainMaitre);
+    o.start(t); o.stop(t + 0.28);
+
+    var src = c.createBufferSource();
+    src.buffer = bruit(); src.loop = true;
+    var lp = c.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 900;
+    var ng = c.createGain();
+    ng.gain.setValueAtTime(0.0001, t);
+    ng.gain.exponentialRampToValueAtTime(0.2, t + 0.006);
+    ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+    src.connect(lp); lp.connect(ng); ng.connect(gainMaitre);
+    src.start(t); src.stop(t + 0.12);
+  }
+
+  function sonCloture() {
+    if (!pret()) return;
+    var c = audio, t = c.currentTime;
+    var o = c.createOscillator();
+    o.type = 'square';
+    o.frequency.setValueAtTime(430, t);
+    o.frequency.exponentialRampToValueAtTime(170, t + 0.09);
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.16, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
+    o.connect(g); g.connect(gainMaitre);
+    o.start(t); o.stop(t + 0.15);
+
+    var src = c.createBufferSource();
+    src.buffer = bruit(); src.loop = true;
+    var bp = c.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 1500; bp.Q.value = 2;
+    var ng = c.createGain();
+    ng.gain.setValueAtTime(0.0001, t);
+    ng.gain.exponentialRampToValueAtTime(0.18, t + 0.005);
+    ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+    src.connect(bp); bp.connect(ng); ng.connect(gainMaitre);
+    src.start(t); src.stop(t + 0.1);
+  }
+
+  // Meuglement de Meliza : sawtooth avec vibrato, filtré.
+  function meuglement(t0, volume) {
+    var c = audio;
+    var o = c.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(196, t0);
+    o.frequency.linearRampToValueAtTime(233, t0 + 0.12);
+    o.frequency.linearRampToValueAtTime(148, t0 + 0.62);
+
+    var lfo = c.createOscillator();
+    lfo.type = 'sine'; lfo.frequency.value = 6.5;
+    var lfoGain = c.createGain(); lfoGain.gain.value = 7;
+    lfo.connect(lfoGain); lfoGain.connect(o.frequency);
+
+    var lp = c.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 1000; lp.Q.value = 5;
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(volume, t0 + 0.09);
+    g.gain.setValueAtTime(volume, t0 + 0.42);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.78);
+
+    o.connect(lp); lp.connect(g); g.connect(gainMaitre);
+    o.start(t0); o.stop(t0 + 0.82);
+    lfo.start(t0); lfo.stop(t0 + 0.82);
+  }
+
+  // Jingle de fin : arpège joyeux + meuglement de Meliza.
+  function sonJingle() {
+    if (!pret()) return;
+    var t = audio.currentTime + 0.02;
+    var notes = [523.25, 659.25, 783.99, 1046.50];
+    for (var i = 0; i < notes.length; i++) note(notes[i], t + i * 0.12, 0.4, 0.16, 'triangle');
+    note(1318.51, t + 0.5, 0.8, 0.13, 'triangle');
+    note(392.00, t + 0.48, 0.9, 0.1, 'sine');
+    meuglement(t + 0.14, 0.2);
+  }
+
+  function sonRecord() {
+    if (!pret()) return;
+    var t = audio.currentTime + 0.02;
+    note(784, t, 0.22, 0.15, 'triangle');
+    note(987.77, t + 0.1, 0.22, 0.15, 'triangle');
+    note(1174.66, t + 0.2, 0.42, 0.16, 'triangle');
+    note(1567.98, t + 0.3, 0.5, 0.09, 'sine');
+  }
+
+  // ------------------------------------------------------------------
+  //  Vibrations
+  // ------------------------------------------------------------------
+  function vibrer(motif) {
+    if (!navigator.vibrate) return;
+    try { navigator.vibrate(motif); } catch (e) {}
+  }
 
   // ------------------------------------------------------------------
   //  Le dessin de Meliza (vue de dessus, museau vers la droite)
@@ -263,21 +641,25 @@
   var largeur = 0, hauteur = 0, dpr = 1;
   var u = 1;                      // unité d'échelle selon la taille de l'écran
   var rayonBase = 22;             // rayon de Meliza à taille normale
-  var margeHaut = 88, margeBas = 26, margeCote = 22;
+  var margeHaut = 100, margeBas = 26, margeCote = 22, cielH = 90;
 
   var meliza = { x: 0, y: 0, angle: -Math.PI / 2, angleCible: -Math.PI / 2,
-                 cibleX: 0, cibleY: 0, taille: 1, phase: 0, bouge: 0 };
+                 cibleX: 0, cibleY: 0, taille: 1, phase: 0, bouge: 0, machage: 0, immu: 0 };
 
-  var touffes = [], particules = [], bulles = [];
-  var enCours = false, tempsJeu = 0, score = 0, record = 0, recordBattu = false;
+  var touffes = [], obstacles = [], particules = [], bulles = [], nuages = [];
+  var enCours = false, tempsJeu = 0, score = 0, record = 0, recordBattu = false, fanfareJouee = false;
   var tempsAnim = 0, dernierTs = 0, pointeurActif = false;
-  var dernierChronoVu = -1;
+  var dernierChronoVu = -1, dernierScoreVu = -1;
+  var tempsProchainObstacle = 4;
+  var secousse = 0, flashRouge = 0;
 
   var fond = document.createElement('canvas');
   var fondCtx = fond.getContext('2d');
 
   function rayonMeliza() { return rayonBase * meliza.taille; }
   function borne(v, min, max) { return v < min ? min : (v > max ? max : v); }
+  function progression() { return borne(tempsJeu / DUREE_PARTIE, 0, 1); }
+  function dureeVieTouffe() { return VIE_DEPART + (VIE_FIN - VIE_DEPART) * progression(); }
 
   // Générateur pseudo-aléatoire à graine : le décor reste stable au redimensionnement.
   function alea(graine) {
@@ -291,7 +673,7 @@
   }
 
   // ------------------------------------------------------------------
-  //  Record (localStorage)
+  //  Record et son (localStorage)
   // ------------------------------------------------------------------
   function lireRecord() {
     try {
@@ -304,7 +686,7 @@
   }
 
   // ------------------------------------------------------------------
-  //  Dimensions et décor de fond
+  //  Décor : ciel, collines, pré, fleurs (le tout cuit une fois)
   // ------------------------------------------------------------------
   function creerFond() {
     fond.width = Math.max(1, Math.round(largeur * dpr));
@@ -312,27 +694,84 @@
     var c = fondCtx;
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    var g = c.createLinearGradient(0, 0, 0, hauteur);
+    // --- ciel ---
+    var ciel = c.createLinearGradient(0, 0, 0, cielH);
+    ciel.addColorStop(0, '#6ec1e8');
+    ciel.addColorStop(0.65, '#a9ddf2');
+    ciel.addColorStop(1, '#ddf1fb');
+    c.fillStyle = ciel;
+    c.fillRect(0, 0, largeur, cielH + 2);
+
+    // soleil doux
+    var soleil = c.createRadialGradient(largeur * 0.5, cielH * 0.44, 2,
+                                        largeur * 0.5, cielH * 0.44, cielH * 0.62);
+    soleil.addColorStop(0, 'rgba(255,250,214,.95)');
+    soleil.addColorStop(0.35, 'rgba(255,240,170,.42)');
+    soleil.addColorStop(1, 'rgba(255,240,170,0)');
+    c.fillStyle = soleil;
+    c.fillRect(0, 0, largeur, cielH + 2);
+
+    // --- colline lointaine ---
+    c.fillStyle = '#8ec96a';
+    c.beginPath();
+    c.moveTo(0, cielH + 12);
+    c.quadraticCurveTo(largeur * 0.5, cielH - 20, largeur, cielH + 10);
+    c.lineTo(largeur, hauteur);
+    c.lineTo(0, hauteur);
+    c.closePath();
+    c.fill();
+
+    // petits bosquets sur la crête
+    var rndArb = alea(77123);
+    c.fillStyle = '#79bb56';
+    var nbArb = Math.max(3, Math.round(largeur / 90));
+    for (var a = 0; a < nbArb; a++) {
+      var ax = (a + 0.5) * (largeur / nbArb) + (rndArb() - 0.5) * 26;
+      var ay = cielH + 6 - Math.sin((ax / largeur) * Math.PI) * 22 + rndArb() * 4;
+      var ar = (5 + rndArb() * 4) * u;
+      c.beginPath();
+      c.arc(ax, ay, ar, 0, 6.2832);
+      c.fill();
+    }
+
+    // --- pré ---
+    var g = c.createLinearGradient(0, cielH, 0, hauteur);
     g.addColorStop(0, '#a9e06b');
     g.addColorStop(0.55, '#7cc94a');
     g.addColorStop(1, '#4c9a2a');
+
+    c.save();
+    c.beginPath();
+    c.moveTo(0, cielH + 20);
+    c.quadraticCurveTo(largeur * 0.5, cielH - 2, largeur, cielH + 18);
+    c.lineTo(largeur, hauteur);
+    c.lineTo(0, hauteur);
+    c.closePath();
+    c.clip();
+
     c.fillStyle = g;
     c.fillRect(0, 0, largeur, hauteur);
 
     // Bandes de tonte
-    c.save();
     c.globalAlpha = 0.055;
     c.fillStyle = '#ffffff';
     var bande = Math.max(46, hauteur / 13);
-    for (var y = 0; y < hauteur; y += bande * 2) c.fillRect(0, y, largeur, bande);
-    c.restore();
+    for (var y = cielH; y < hauteur; y += bande * 2) c.fillRect(0, y, largeur, bande);
+    c.globalAlpha = 1;
 
-    // Pâquerettes
+    // Fleurs
     var rnd = alea(20260929);
     var nb = Math.round((largeur * hauteur) / 42000);
     for (var i = 0; i < nb; i++) {
-      dessinerPaquerette(c, rnd() * largeur, rnd() * hauteur, (2.2 + rnd() * 2.2) * u, rnd() * Math.PI);
+      var fx = rnd() * largeur;
+      var fy = cielH + 24 + rnd() * Math.max(1, hauteur - cielH - 24);
+      var fr = (2.2 + rnd() * 2.2) * u;
+      var tirage = rnd();
+      if (tirage < 0.62) dessinerPaquerette(c, fx, fy, fr, rnd() * Math.PI);
+      else if (tirage < 0.86) dessinerBoutonDOr(c, fx, fy, fr);
+      else dessinerFleurRose(c, fx, fy, fr, rnd() * Math.PI);
     }
+    c.restore();
   }
 
   function dessinerPaquerette(c, x, y, r, rotation) {
@@ -353,6 +792,103 @@
     c.restore();
   }
 
+  function dessinerBoutonDOr(c, x, y, r) {
+    c.save();
+    c.translate(x, y);
+    c.globalAlpha = 0.85;
+    c.fillStyle = '#ffd94a';
+    for (var p = 0; p < 5; p++) {
+      c.beginPath();
+      c.ellipse(Math.cos(p * 1.2566) * r * 0.95, Math.sin(p * 1.2566) * r * 0.95,
+                r * 0.72, r * 0.52, p * 1.2566, 0, 6.2832);
+      c.fill();
+    }
+    c.fillStyle = '#f0a92c';
+    c.beginPath();
+    c.arc(0, 0, r * 0.5, 0, 6.2832);
+    c.fill();
+    c.restore();
+  }
+
+  function dessinerFleurRose(c, x, y, r, rotation) {
+    c.save();
+    c.translate(x, y);
+    c.rotate(rotation);
+    c.globalAlpha = 0.78;
+    c.fillStyle = '#f6a8c0';
+    for (var p = 0; p < 6; p++) {
+      c.beginPath();
+      c.arc(Math.cos(p * 1.0472) * r * 0.86, Math.sin(p * 1.0472) * r * 0.86, r * 0.55, 0, 6.2832);
+      c.fill();
+    }
+    c.fillStyle = '#fffdf7';
+    c.beginPath();
+    c.arc(0, 0, r * 0.42, 0, 6.2832);
+    c.fill();
+    c.restore();
+  }
+
+  // ------------------------------------------------------------------
+  //  Nuages
+  // ------------------------------------------------------------------
+  function creerNuages() {
+    nuages = [];
+    var n = borne(Math.round(largeur / 190), 3, 7);
+    for (var i = 0; i < n; i++) {
+      nuages.push({
+        x: Math.random() * largeur,
+        y: cielH * (0.16 + Math.random() * 0.3),
+        e: Math.min(1.5, (0.34 + Math.random() * 0.42) * u),
+        v: (5 + Math.random() * 10) * u,
+        a: 0.5 + Math.random() * 0.4
+      });
+    }
+  }
+
+  function majNuages(dt) {
+    for (var i = 0; i < nuages.length; i++) {
+      var n = nuages[i];
+      n.x += n.v * dt;
+      if (n.x - 60 * n.e > largeur) {
+        n.x = -60 * n.e;
+        n.y = cielH * (0.16 + Math.random() * 0.3);
+        n.e = Math.min(1.5, (0.34 + Math.random() * 0.42) * u);
+        n.a = 0.5 + Math.random() * 0.4;
+      }
+    }
+  }
+
+  function dessinerNuages() {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, largeur, cielH + 2);
+    ctx.clip();
+    for (var i = 0; i < nuages.length; i++) {
+      var n = nuages[i];
+      ctx.save();
+      ctx.translate(n.x, n.y);
+      ctx.scale(n.e, n.e);
+      ctx.globalAlpha = n.a;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(-26, 4, 17, 0, 6.2832);
+      ctx.arc(-4, -7, 23, 0, 6.2832);
+      ctx.arc(22, 2, 18, 0, 6.2832);
+      ctx.arc(4, 11, 15, 0, 6.2832);
+      ctx.fill();
+      ctx.globalAlpha = n.a * 0.5;
+      ctx.fillStyle = '#dceffb';
+      ctx.beginPath();
+      ctx.ellipse(0, 12, 30, 8, 0, 0, 6.2832);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // ------------------------------------------------------------------
+  //  Dimensions
+  // ------------------------------------------------------------------
   function redimensionner() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     largeur = canvas.clientWidth || window.innerWidth;
@@ -363,15 +899,17 @@
 
     u = borne(Math.min(largeur, hauteur) / 300, 0.85, 2.4);
     rayonBase = 22 * u;
-    margeHaut = Math.min(88, hauteur * 0.18);
+    cielH = borne(hauteur * 0.17, 62, 132);
+    margeHaut = cielH + 8;
     margeCote = Math.max(18, 22 * u);
     margeBas  = Math.max(18, 26 * u);
 
     creerFond();
+    creerNuages();
 
     // Tout le monde reste dans le pré
     meliza.x = borne(meliza.x || largeur / 2, rayonBase, largeur - rayonBase);
-    meliza.y = borne(meliza.y || hauteur * 0.62, rayonBase, hauteur - rayonBase);
+    meliza.y = borne(meliza.y || hauteur * 0.62, margeHaut + rayonBase * 0.2, hauteur - rayonBase);
     meliza.cibleX = meliza.x;
     meliza.cibleY = meliza.y;
     for (var i = 0; i < touffes.length; i++) {
@@ -380,36 +918,92 @@
       t.x = borne(t.x, margeCote, largeur - margeCote);
       t.y = borne(t.y, margeHaut, hauteur - margeBas);
     }
+    for (var j = 0; j < obstacles.length; j++) {
+      var o = obstacles[j];
+      o.r = (o.type === 'caillou' ? 17 : 22) * u;
+      o.x = borne(o.x, margeCote + o.r, largeur - margeCote - o.r);
+      o.y = borne(o.y, margeHaut + o.r, hauteur - margeBas - o.r);
+    }
   }
 
   // ------------------------------------------------------------------
   //  Herbe
   // ------------------------------------------------------------------
+  function placementLibre(x, y, r) {
+    if (Math.hypot(x - meliza.x, y - meliza.y) < rayonBase * 2.8) return false;
+    var i;
+    for (i = 0; i < touffes.length; i++) {
+      if (Math.hypot(x - touffes[i].x, y - touffes[i].y) < r * 2.6) return false;
+    }
+    for (i = 0; i < obstacles.length; i++) {
+      if (Math.hypot(x - obstacles[i].x, y - obstacles[i].y) < obstacles[i].r + r * 2.2) return false;
+    }
+    return true;
+  }
+
   function nouvelleTouffe(immediate) {
     var r = 13 * u;
-    var x = 0, y = 0, ok = false;
+    var x = largeur / 2, y = hauteur / 2, ok = false;
     for (var essai = 0; essai < 40 && !ok; essai++) {
       x = margeCote + Math.random() * Math.max(1, largeur - 2 * margeCote);
       y = margeHaut + Math.random() * Math.max(1, hauteur - margeHaut - margeBas);
-      ok = Math.hypot(x - meliza.x, y - meliza.y) > rayonBase * 2.8;
-      if (ok) {
-        for (var i = 0; i < touffes.length; i++) {
-          if (Math.hypot(x - touffes[i].x, y - touffes[i].y) < r * 2.6) { ok = false; break; }
-        }
-      }
+      ok = placementLibre(x, y, r);
     }
-    return { x: x, y: y, r: r, phase: Math.random() * 6.2832, apparition: immediate ? 1 : 0 };
+    var doree = Math.random() < CHANCE_DOREE;
+    var vieMax = dureeVieTouffe() * (doree ? 0.75 : 1);
+    return {
+      x: x, y: y, r: r,
+      phase: Math.random() * 6.2832,
+      apparition: immediate ? 1 : 0,
+      doree: doree,
+      vie: 0, vieMax: vieMax, fane: false,
+      graine: Math.random() * 6.2832
+    };
+  }
+
+  function dessinerEtoile(x, y, r, rotation, couleur) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.fillStyle = couleur;
+    ctx.beginPath();
+    for (var i = 0; i < 8; i++) {
+      var a = i * 0.7854;
+      var rr = (i % 2 === 0) ? r : r * 0.34;
+      var px = Math.cos(a) * rr, py = Math.sin(a) * rr;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   }
 
   function dessinerTouffe(t) {
     var a = t.apparition;
     if (a <= 0) return;
     var grossissement = a * a * (3 - 2 * a);          // lissage
-    var s = t.r * grossissement;
+    var restant = t.vieMax - t.vie;
+    var vieillissement = t.fane ? 1 : 1 - 0.14 * (t.vie / t.vieMax);
+    var s = t.r * grossissement * vieillissement;
     var balancement = Math.sin(tempsAnim * 1.8 + t.phase) * 0.12;
+    var clignote = (!t.fane && restant < 1.4) ? 0.5 + 0.5 * Math.abs(Math.sin(tempsAnim * 9)) : 1;
 
     ctx.save();
     ctx.translate(t.x, t.y);
+    ctx.globalAlpha = clignote;
+
+    // halo doré
+    if (t.doree && a > 0.3) {
+      var pulsation = 0.75 + 0.25 * Math.sin(tempsAnim * 4 + t.graine);
+      var halo = ctx.createRadialGradient(0, 0, 0, 0, 0, s * 3 * pulsation);
+      halo.addColorStop(0, 'rgba(255,224,138,.55)');
+      halo.addColorStop(0.5, 'rgba(255,209,102,.22)');
+      halo.addColorStop(1, 'rgba(255,209,102,0)');
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(0, 0, s * 3 * pulsation, 0, 6.2832);
+      ctx.fill();
+    }
 
     // ombre au sol
     ctx.fillStyle = 'rgba(30,60,15,.16)';
@@ -417,8 +1011,21 @@
     ctx.ellipse(0, s * 0.28, s * 0.95, s * 0.35, 0, 0, 6.2832);
     ctx.fill();
 
+    // anneau de fraîcheur : montre le temps qui reste
+    if (!t.fane && restant < t.vieMax * 0.62) {
+      var frac = borne(restant / t.vieMax, 0, 1);
+      ctx.strokeStyle = t.doree ? 'rgba(255,224,138,.95)' : 'rgba(255,253,247,.75)';
+      ctx.lineWidth = Math.max(1.6, 2.4 * u);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(0, s * 0.1, s * 1.35, -1.5708, -1.5708 + 6.2832 * frac);
+      ctx.stroke();
+    }
+
     ctx.rotate(balancement);
-    var couleurs = ['#3c8222', '#4fa32c', '#68c23f', '#57b83a', '#2f7d1f'];
+    var couleurs = t.doree
+      ? ['#d99420', '#f0b429', '#ffd94a', '#f7c948', '#c9861a']
+      : ['#3c8222', '#4fa32c', '#68c23f', '#57b83a', '#2f7d1f'];
     for (var i = 0; i < 5; i++) {
       var angle = -Math.PI / 2 + (i - 2) * 0.34 + balancement * 0.6;
       var haut = s * (1.7 + (i === 2 ? 0.75 : (i === 0 || i === 4 ? 0.05 : 0.42)));
@@ -437,6 +1044,192 @@
       ctx.fill();
     }
     ctx.restore();
+
+    // étincelles des touffes dorées
+    if (t.doree && a > 0.5) {
+      for (var k = 0; k < 3; k++) {
+        var ang = tempsAnim * 1.6 + t.graine + k * 2.0944;
+        var ray = s * 1.9;
+        var scintille = 0.4 + 0.6 * Math.abs(Math.sin(tempsAnim * 5 + k * 1.7 + t.graine));
+        dessinerEtoile(t.x + Math.cos(ang) * ray, t.y + Math.sin(ang) * ray * 0.7 - s * 0.6,
+                       s * 0.42 * scintille, ang, 'rgba(255,247,214,.95)');
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------
+  //  Obstacles : cailloux (perte de temps) et clôtures (perte de points)
+  // ------------------------------------------------------------------
+  function formerCaillou() {
+    var pts = [];
+    var n = 8;
+    for (var i = 0; i < n; i++) {
+      var a = (i / n) * 6.2832;
+      var rr = 0.74 + Math.random() * 0.32;
+      pts.push([Math.cos(a) * rr, Math.sin(a) * rr]);
+    }
+    return pts;
+  }
+
+  function ajouterObstacle() {
+    var type = Math.random() < 0.55 ? 'caillou' : 'cloture';
+    var o = {
+      type: type,
+      r: (type === 'caillou' ? 17 : 22) * u,
+      x: 0, y: 0,
+      rotation: (Math.random() - 0.5) * 0.7,
+      apparition: 0,
+      cooldown: 0,
+      forme: type === 'caillou' ? formerCaillou() : null
+    };
+
+    var ok = false;
+    for (var essai = 0; essai < 60 && !ok; essai++) {
+      o.x = margeCote + o.r + Math.random() * Math.max(1, largeur - 2 * (margeCote + o.r));
+      // marge en haut : même pivotée, une clôture ne doit pas mordre sur le ciel
+      o.y = margeHaut + o.r * 1.6 +
+            Math.random() * Math.max(1, hauteur - margeHaut - margeBas - o.r * 2.6);
+      ok = Math.hypot(o.x - meliza.x, o.y - meliza.y) > rayonBase * 5;
+      if (ok) {
+        for (var i = 0; i < obstacles.length; i++) {
+          var a2 = obstacles[i];
+          if (Math.hypot(o.x - a2.x, o.y - a2.y) < (o.r + a2.r) * 2.1) { ok = false; break; }
+        }
+      }
+    }
+
+    obstacles.push(o);
+
+    // Aucune touffe ne doit devenir inatteignable sous un obstacle.
+    for (var j = touffes.length - 1; j >= 0; j--) {
+      if (Math.hypot(touffes[j].x - o.x, touffes[j].y - o.y) < o.r + touffes[j].r * 1.6) {
+        touffes.splice(j, 1);
+        touffes.push(nouvelleTouffe(false));
+      }
+    }
+
+    return o;
+  }
+
+  function dessinerCaillou(o, s) {
+    ctx.save();
+    ctx.translate(o.x, o.y);
+    ctx.rotate(o.rotation);
+
+    ctx.fillStyle = 'rgba(30,60,15,.22)';
+    ctx.beginPath();
+    ctx.ellipse(0, s * 0.5, s * 1.05, s * 0.38, 0, 0, 6.2832);
+    ctx.fill();
+
+    var g = ctx.createLinearGradient(-s, -s, s, s);
+    g.addColorStop(0, '#c3beb7');
+    g.addColorStop(0.5, '#a09a93');
+    g.addColorStop(1, '#7e7871');
+
+    ctx.beginPath();
+    for (var i = 0; i < o.forme.length; i++) {
+      var px = o.forme[i][0] * s, py = o.forme[i][1] * s * 0.86;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.strokeStyle = '#2e2725';
+    ctx.lineWidth = Math.max(1.8, 2.6 * u);
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // facette éclairée
+    ctx.beginPath();
+    ctx.moveTo(o.forme[7][0] * s * 0.72, o.forme[7][1] * s * 0.62);
+    ctx.lineTo(o.forme[0][0] * s * 0.5, o.forme[0][1] * s * 0.5);
+    ctx.lineTo(o.forme[1][0] * s * 0.55, o.forme[1][1] * s * 0.5);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    ctx.fill();
+
+    // fissure
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.1, -s * 0.5);
+    ctx.lineTo(s * 0.05, -s * 0.05);
+    ctx.lineTo(-s * 0.2, s * 0.35);
+    ctx.strokeStyle = 'rgba(46,39,37,.45)';
+    ctx.lineWidth = Math.max(1.2, 1.8 * u);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function dessinerCloture(o, s) {
+    ctx.save();
+    ctx.translate(o.x, o.y);
+    ctx.rotate(o.rotation);
+
+    var w = s * 1.3, h = s * 0.95;
+    var trait = Math.max(1.8, 2.6 * u);
+
+    ctx.fillStyle = 'rgba(30,60,15,.2)';
+    ctx.beginPath();
+    ctx.ellipse(0, h * 0.95, w * 1.05, h * 0.28, 0, 0, 6.2832);
+    ctx.fill();
+
+    ctx.strokeStyle = '#2e2725';
+    ctx.lineWidth = trait;
+    ctx.lineJoin = 'round';
+
+    // lisses
+    ctx.fillStyle = '#d9a05b';
+    ctx.beginPath(); ctx.rect(-w, -h * 0.62, w * 2, h * 0.3); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.rect(-w, h * 0.14, w * 2, h * 0.3); ctx.fill(); ctx.stroke();
+
+    // poteaux
+    ctx.fillStyle = '#c98f4e';
+    ctx.beginPath(); ctx.rect(-w * 0.92, -h, w * 0.34, h * 1.85); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.rect(w * 0.58, -h * 0.92, w * 0.34, h * 1.85); ctx.fill(); ctx.stroke();
+
+    // veines du bois
+    ctx.strokeStyle = 'rgba(46,39,37,.35)';
+    ctx.lineWidth = Math.max(1, 1.4 * u);
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.75, -h * 0.5); ctx.lineTo(w * 0.75, -h * 0.5);
+    ctx.moveTo(-w * 0.75, h * 0.28);  ctx.lineTo(w * 0.75, h * 0.28);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function dessinerObstacle(o) {
+    var a = o.apparition;
+    if (a <= 0) return;
+    var lissage = a * a * (3 - 2 * a);
+    var s = o.r * (0.6 + 0.4 * lissage);
+
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, a * 1.6);
+
+    if (o.type === 'caillou') dessinerCaillou(o, s);
+    else dessinerCloture(o, s);
+    ctx.restore();
+
+    // avertissement pendant l'apparition
+    if (a < 0.92) {
+      var pulsation = 0.5 + 0.5 * Math.sin(tempsAnim * 12);
+      ctx.save();
+      ctx.globalAlpha = (1 - a) * (0.45 + 0.45 * pulsation);
+      ctx.strokeStyle = '#c0392b';
+      ctx.lineWidth = Math.max(2, 3 * u);
+      ctx.setLineDash([6 * u, 5 * u]);
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, o.r * 2, 0, 6.2832);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#c0392b';
+      ctx.font = '800 ' + Math.round(20 * u) + 'px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('!', o.x, o.y - o.r * 2.5);
+      ctx.restore();
+    }
   }
 
   // ------------------------------------------------------------------
@@ -456,10 +1249,11 @@
     ctx.ellipse(-r * 0.05, r * 0.22, taille * 0.42, taille * 0.33, 0, 0, 6.2832);
     ctx.fill();
 
-    // petit dandinement de la marche
+    // petit dandinement de la marche + mastication
     var bob = Math.sin(meliza.phase) * r * 0.07 * meliza.bouge;
-    var etirement = Math.sin(meliza.phase * 2) * 0.022 * meliza.bouge;
-    ctx.translate(0, bob);
+    var mach = Math.sin(meliza.machage * 26) * meliza.machage;
+    var etirement = Math.sin(meliza.phase * 2) * 0.022 * meliza.bouge + mach * 0.06;
+    ctx.translate(mach * r * 0.16, bob);
     ctx.scale(1 + etirement, 1 - etirement);
 
     if (melizaPrete) {
@@ -473,14 +1267,29 @@
       ctx.fill();
       ctx.stroke();
     }
+
+    // miettes de la bouchée
+    if (meliza.machage > 0.25) {
+      ctx.globalAlpha = meliza.machage * 0.9;
+      ctx.fillStyle = '#68c23f';
+      for (var i = 0; i < 3; i++) {
+        var a = meliza.angle + (i - 1) * 0.5;
+        ctx.beginPath();
+        ctx.arc(Math.cos(a) * r * 1.25, Math.sin(a) * r * 1.25,
+                Math.max(1.2, r * 0.09), 0, 6.2832);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
     ctx.restore();
   }
 
   // ------------------------------------------------------------------
   //  Effets
   // ------------------------------------------------------------------
-  function ajouterParticules(x, y, r) {
-    for (var i = 0; i < 7; i++) {
+  function ajouterParticules(x, y, r, couleurs) {
+    for (var i = 0; i < 8; i++) {
       var a = Math.random() * 6.2832;
       var v = (0.7 + Math.random() * 1.3) * r * 2.2;
       particules.push({
@@ -488,7 +1297,7 @@
         vx: Math.cos(a) * v, vy: Math.sin(a) * v - r * 0.8,
         taille: r * (0.16 + Math.random() * 0.16),
         vie: 0, duree: 0.45 + Math.random() * 0.25,
-        couleur: ['#3c8222', '#68c23f', '#57b83a'][i % 3]
+        couleur: couleurs[i % couleurs.length]
       });
     }
   }
@@ -510,6 +1319,8 @@
       if (b.vie >= b.duree) { bulles.splice(i, 1); continue; }
       b.y -= 34 * u * dt;
     }
+    if (secousse > 0) secousse = Math.max(0, secousse - dt * 3.2);
+    if (flashRouge > 0) flashRouge = Math.max(0, flashRouge - dt * 2.4);
   }
 
   function dessinerEffets() {
@@ -529,10 +1340,10 @@
     ctx.font = '800 ' + Math.round(17 * u) + 'px system-ui, sans-serif';
     ctx.lineWidth = Math.max(2, 3.5 * u);
     ctx.strokeStyle = 'rgba(255,253,247,.95)';
-    ctx.fillStyle = '#2f6b1c';
     for (i = 0; i < bulles.length; i++) {
       var b = bulles[i];
       ctx.globalAlpha = Math.min(1, 2.2 * (1 - b.vie / b.duree));
+      ctx.fillStyle = b.couleur || '#2f6b1c';
       ctx.strokeText(b.texte, b.x, b.y);
       ctx.fillText(b.texte, b.x, b.y);
     }
@@ -542,7 +1353,17 @@
   // ------------------------------------------------------------------
   //  Déroulement de la partie
   // ------------------------------------------------------------------
-  function majScore() { elScore.textContent = String(score); }
+  function majScore() {
+    if (score !== dernierScoreVu) {
+      dernierScoreVu = score;
+      elScore.textContent = String(score);
+    }
+  }
+
+  function clignoterPastille(el, classe, duree) {
+    el.classList.add(classe);
+    window.setTimeout(function () { el.classList.remove(classe); }, duree);
+  }
 
   function majChrono(force) {
     var restant = Math.max(0, Math.ceil(DUREE_PARTIE - tempsJeu));
@@ -557,67 +1378,197 @@
   }
 
   function reinitialiser() {
-    score = 0; tempsJeu = 0; recordBattu = false;
-    meliza.taille = 1; meliza.phase = 0; meliza.bouge = 0;
+    score = 0; tempsJeu = 0; recordBattu = false; fanfareJouee = false;
+    meliza.taille = 1; meliza.phase = 0; meliza.bouge = 0; meliza.machage = 0; meliza.immu = 0;
     meliza.x = largeur / 2;
     meliza.y = hauteur * 0.62;
     meliza.cibleX = meliza.x;
     meliza.cibleY = meliza.y;
     meliza.angle = -Math.PI / 2;
     meliza.angleCible = -Math.PI / 2;
-    particules = []; bulles = []; touffes = [];
+    particules = []; bulles = []; touffes = []; obstacles = [];
+    secousse = 0; flashRouge = 0;
+    tempsProchainObstacle = 4;
     for (var i = 0; i < NB_TOUFFES; i++) touffes.push(nouvelleTouffe(true));
-    dernierChronoVu = -1;
+    for (var j = 0; j < OBSTACLES_DEPART; j++) {
+      var o = ajouterObstacle();
+      o.apparition = 1;
+    }
+    dernierChronoVu = -1; dernierScoreVu = -1;
     majScore();
     majChrono(true);
   }
 
   function demarrer() {
+    reveillerAudio();
     reinitialiser();
     ecranAccueil.classList.add('cache');
     ecranFin.classList.add('cache');
+    carteFin.classList.remove('fete');
+    elHakim.hidden = true;
     enCours = true;
   }
 
   function finir() {
     enCours = false;
     meliza.bouge = 0;
+    pointeurActif = false;
+
+    recordBattu = score > record && score > 0;
+    if (score > record) { record = score; ecrireRecord(record); }
+
     elScoreFin.textContent = String(score);
     elRecordFin.textContent = String(record);
     elMessageRecord.hidden = !recordBattu;
+    elHakim.hidden = !recordBattu;
+    carteFin.classList.toggle('fete', recordBattu);
+
+    sonJingle();
+    if (recordBattu) window.setTimeout(sonRecord, 900);
+    vibrer(recordBattu ? [40, 60, 40, 60, 90] : 40);
+
     ecranFin.classList.remove('cache');
   }
 
   function manger(index) {
     var t = touffes[index];
-    score++;
-    if (score > record) { record = score; ecrireRecord(record); recordBattu = true; }
-    meliza.taille = Math.min(TAILLE_MAX, meliza.taille + GAIN_TAILLE);
-    ajouterParticules(t.x, t.y, t.r);
-    bulles.push({ x: t.x, y: t.y - t.r, texte: '+1', vie: 0, duree: 0.7 });
+    var gain = t.doree ? POINTS_DOREE : 1;
+
+    score += gain;
+    if (score > record && !fanfareJouee) { fanfareJouee = true; sonRecord(); }
+
+    meliza.taille = Math.min(TAILLE_MAX, meliza.taille + GAIN_TAILLE * (t.doree ? 1.8 : 1));
+    meliza.machage = 1;
+    ajouterParticules(t.x, t.y, t.r,
+      t.doree ? ['#ffd94a', '#f0b429', '#fff3cf'] : ['#3c8222', '#68c23f', '#57b83a']);
+    bulles.push({
+      x: t.x, y: t.y - t.r,
+      texte: '+' + gain,
+      couleur: t.doree ? '#a5700f' : '#2f6b1c',
+      vie: 0, duree: 0.7
+    });
+
+    sonCroc(t.doree);
+    vibrer(t.doree ? 22 : 12);
+    if (t.doree) clignoterPastille(pastScore, 'gain', 420);
+
     majScore();
     touffes.splice(index, 1);
     touffes.push(nouvelleTouffe(false));
   }
 
+  function penaliteTemps(secondes) {
+    tempsJeu += secondes;
+    majChrono(true);
+    clignoterPastille(pastChrono, 'perte', 620);
+    bulles.push({ x: meliza.x, y: meliza.y - rayonMeliza(), texte: '−' + secondes + ' s',
+                  couleur: '#c0392b', vie: 0, duree: 1 });
+  }
+
+  function penalitePoints(points) {
+    score = Math.max(0, score - points);
+    majScore();
+    clignoterPastille(pastScore, 'perte', 620);
+    bulles.push({ x: meliza.x, y: meliza.y - rayonMeliza(), texte: '−' + points,
+                  couleur: '#c0392b', vie: 0, duree: 1 });
+  }
+
+  function heurter(o) {
+    var r = rayonMeliza();
+    var rc = r * 0.82;
+    var dx = meliza.x - o.x;
+    var dy = meliza.y - o.y;
+    var d = Math.hypot(dx, dy) || 0.001;
+    var lim = rc + o.r * 0.86;
+
+    // on repousse Meliza hors de l'obstacle
+    meliza.x = o.x + (dx / d) * lim;
+    meliza.y = o.y + (dy / d) * lim;
+    meliza.x = borne(meliza.x, r, largeur - r);
+    meliza.y = borne(meliza.y, margeHaut + r * 0.2, hauteur - r);
+    // elle lâche la cible : le doigt doit repartir
+    meliza.cibleX = meliza.x;
+    meliza.cibleY = meliza.y;
+
+    if (meliza.immu > 0 || o.cooldown > 0) return;
+    meliza.immu = 0.6;          // pas de double punition si deux obstacles se touchent
+    o.cooldown = 2.2;
+    secousse = 1;
+    flashRouge = 0.55;
+
+    if (o.type === 'caillou') {
+      penaliteTemps(PENALITE_TEMPS);
+      sonCaillou();
+      vibrer([30, 45, 30]);
+      ajouterParticules(o.x, o.y, o.r, ['#c3beb7', '#a09a93', '#8a857f']);
+    } else {
+      penalitePoints(PENALITE_POINTS);
+      sonCloture();
+      vibrer([25, 40, 25]);
+      ajouterParticules(o.x, o.y, o.r, ['#d9a05b', '#c98f4e', '#a9713a']);
+    }
+  }
+
   // ------------------------------------------------------------------
   //  Mise à jour
   // ------------------------------------------------------------------
-  function maj(dt) {
-    tempsAnim += dt;
-
+  function majTouffes(dt) {
     for (var i = 0; i < touffes.length; i++) {
-      if (touffes[i].apparition < 1) {
-        touffes[i].apparition = Math.min(1, touffes[i].apparition + dt * 3.5);
+      var t = touffes[i];
+      if (t.fane) {
+        t.apparition -= dt * 2.6;
+        if (t.apparition <= 0) touffes[i] = nouvelleTouffe(false);
+        continue;
+      }
+      if (t.apparition < 1) {
+        t.apparition = Math.min(1, t.apparition + dt * 3.5);
+        continue;
+      }
+      t.vie += dt;
+      if (t.vie >= t.vieMax) {
+        t.fane = true;
+        ajouterParticules(t.x, t.y, t.r, ['#c9b06a', '#a8a05a', '#8f9a4e']);
       }
     }
+  }
+
+  function majObstacles(dt) {
+    var i;
+    for (i = 0; i < obstacles.length; i++) {
+      var o = obstacles[i];
+      if (o.apparition < 1) o.apparition = Math.min(1, o.apparition + dt * 1.7);
+      if (o.cooldown > 0) o.cooldown -= dt;
+    }
+
+    if (!enCours) return;
+    var cible = OBSTACLES_DEPART +
+                Math.floor(progression() * (OBSTACLES_MAX - OBSTACLES_DEPART));
+    if (obstacles.length < cible) {
+      tempsProchainObstacle -= dt;
+      if (tempsProchainObstacle <= 0) {
+        tempsProchainObstacle = 3.5;
+        ajouterObstacle();
+      }
+    }
+  }
+
+  function maj(dt) {
+    tempsAnim += dt;
+    majNuages(dt);
+    majTouffes(dt);
+    majObstacles(dt);
     majEffets(dt);
 
-    if (!enCours) { meliza.bouge = Math.max(0, meliza.bouge - dt * 6); return; }
+    if (!enCours) {
+      meliza.bouge = Math.max(0, meliza.bouge - dt * 6);
+      meliza.machage = Math.max(0, meliza.machage - dt * 2.6);
+      return;
+    }
 
     tempsJeu += dt;
-    if (tempsJeu >= DUREE_PARTIE) { tempsJeu = DUREE_PARTIE; majChrono(true); finir(); return; }
     majChrono(false);
+    meliza.machage = Math.max(0, meliza.machage - dt * 2.6);
+    if (meliza.immu > 0) meliza.immu -= dt;
 
     // Déplacement : Meliza glisse vers le doigt
     var dx = meliza.cibleX - meliza.x;
@@ -645,38 +1596,78 @@
     // Meliza reste dans le pré
     var r = rayonMeliza();
     meliza.x = borne(meliza.x, r, largeur - r);
-    meliza.y = borne(meliza.y, r + margeHaut * 0.35, hauteur - r);
+    meliza.y = borne(meliza.y, margeHaut + r * 0.2, hauteur - r);
 
     // Brouter
     var portee = r * 1.2;
     for (var j = touffes.length - 1; j >= 0; j--) {
       var t = touffes[j];
-      if (t.apparition < 0.35) continue;
+      if (t.fane || t.apparition < 0.35) continue;
       if (Math.hypot(t.x - meliza.x, t.y - meliza.y) < portee + t.r * 0.6) manger(j);
+    }
+
+    // Se cogner
+    for (var k = 0; k < obstacles.length; k++) {
+      var o = obstacles[k];
+      if (o.apparition < 0.9) continue;
+      var ondx = meliza.x - o.x, ondy = meliza.y - o.y;
+      if (Math.hypot(ondx, ondy) < rayonMeliza() * 0.82 + o.r * 0.86) heurter(o);
+    }
+
+    // Un caillou peut avoir mangé le temps restant : la partie s'arrête
+    if (tempsJeu >= DUREE_PARTIE) {
+      tempsJeu = DUREE_PARTIE;
+      majChrono(true);
+      finir();
     }
   }
 
   // ------------------------------------------------------------------
   //  Rendu
   // ------------------------------------------------------------------
-  function dessiner() {
-    ctx.clearRect(0, 0, largeur, hauteur);
-    ctx.drawImage(fond, 0, 0, largeur, hauteur);
+  var elements = [];
 
-    var i;
-    // Les touffes les plus basses passent devant, pour la profondeur
-    touffes.sort(function (a, b) { return a.y - b.y; });
-    var melizaDessinee = false;
-    for (i = 0; i < touffes.length; i++) {
-      if (!melizaDessinee && touffes[i].y > meliza.y) {
-        dessinerMeliza();
-        melizaDessinee = true;
-      }
-      dessinerTouffe(touffes[i]);
+  function dessiner() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, largeur, hauteur);
+    ctx.save();
+
+    if (secousse > 0.01) {
+      ctx.translate((Math.random() - 0.5) * secousse * 20 * u,
+                    (Math.random() - 0.5) * secousse * 20 * u);
     }
-    if (!melizaDessinee) dessinerMeliza();
+
+    ctx.drawImage(fond, 0, 0, largeur, hauteur);
+    dessinerNuages();
+
+    // Tri par profondeur : ce qui est plus bas passe devant
+    elements.length = 0;
+    var i;
+    for (i = 0; i < touffes.length; i++) elements.push({ y: touffes[i].y, t: 0, o: touffes[i] });
+    for (i = 0; i < obstacles.length; i++) {
+      if (obstacles[i].apparition > 0) elements.push({ y: obstacles[i].y, t: 1, o: obstacles[i] });
+    }
+    elements.push({ y: meliza.y, t: 2, o: null });
+    elements.sort(function (a, b) { return a.y - b.y; });
+
+    for (i = 0; i < elements.length; i++) {
+      var e = elements[i];
+      if (e.t === 0) dessinerTouffe(e.o);
+      else if (e.t === 1) dessinerObstacle(e.o);
+      else dessinerMeliza();
+    }
 
     dessinerEffets();
+    ctx.restore();
+
+    if (flashRouge > 0.01) {
+      var v = ctx.createRadialGradient(largeur / 2, hauteur / 2, Math.min(largeur, hauteur) * 0.25,
+                                       largeur / 2, hauteur / 2, Math.max(largeur, hauteur) * 0.72);
+      v.addColorStop(0, 'rgba(192,57,43,0)');
+      v.addColorStop(1, 'rgba(192,57,43,' + (flashRouge * 0.6).toFixed(3) + ')');
+      ctx.fillStyle = v;
+      ctx.fillRect(0, 0, largeur, hauteur);
+    }
   }
 
   // ------------------------------------------------------------------
@@ -704,6 +1695,7 @@
 
   canvas.addEventListener('pointerdown', function (e) {
     if (!enCours) return;
+    reveillerAudio();
     pointeurActif = true;
     if (canvas.setPointerCapture) { try { canvas.setPointerCapture(e.pointerId); } catch (err) {} }
     viser(e);
@@ -729,16 +1721,52 @@
   document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
+  // ------------------------------------------------------------------
+  //  Bouton du son
+  // ------------------------------------------------------------------
+  function majBoutonSon() {
+    btnSon.textContent = sonActif ? '🔊' : '🔇';
+    btnSon.classList.toggle('eteint', !sonActif);
+    btnSon.setAttribute('aria-pressed', sonActif ? 'true' : 'false');
+    btnSon.setAttribute('aria-label', sonActif ? 'Couper le son' : 'Rétablir le son');
+    btnSon.title = sonActif ? 'Couper le son' : 'Rétablir le son';
+  }
+
+  btnSon.addEventListener('click', function () {
+    sonActif = !sonActif;
+    ecrireSon(sonActif);
+    var c = ouvrirAudio();
+    if (c && gainMaitre) {
+      gainMaitre.gain.setTargetAtTime(sonActif ? 0.55 : 0, c.currentTime, 0.02);
+    }
+    if (sonActif) { reveillerAudio(); sonCroc(false); }
+    majBoutonSon();
+  });
+
   btnJouer.addEventListener('click', demarrer);
   btnRejouer.addEventListener('click', demarrer);
   window.addEventListener('resize', redimensionner);
   window.addEventListener('orientationchange', function () {
     window.setTimeout(redimensionner, 120);
   });
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      pointeurActif = false;
+      if (audio && audio.state === 'running' && audio.suspend) {
+        try { audio.suspend(); } catch (e) {}
+      }
+    } else {
+      reveillerAudio();
+      dernierTs = 0;
+    }
+  });
 
   // ------------------------------------------------------------------
   //  Démarrage
   // ------------------------------------------------------------------
+  sonActif = lireSon();
+  majBoutonSon();
+
   record = lireRecord();
   elRecordAccueil.textContent = String(record);
   elRecordFin.textContent = String(record);
