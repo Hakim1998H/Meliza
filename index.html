@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Meliza la vache gourmande</title>
+<meta name="description" content="Guide Meliza du bout du doigt sur le pré et mange un maximum de touffes d'herbe en 60 secondes.">
+<meta name="theme-color" content="#4c9a2a">
+<meta name="color-scheme" content="light">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Meliza">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icone-192.png">
+<link rel="apple-touch-icon" href="icone-180.png">
+<style>
+  :root{
+    --encre:#2e2725;
+    --creme:#fffdf7;
+    --or:#ffd166;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none}
+  body{
+    background:#4c9a2a;
+    color:var(--encre);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    touch-action:none;
+    user-select:none;
+    -webkit-user-select:none;
+    -webkit-touch-callout:none;
+    -webkit-font-smoothing:antialiased;
+  }
+  #jeu{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+
+  /* ---------------- Tableau de bord ---------------- */
+  #hud{
+    position:fixed;
+    top:0;left:0;right:0;
+    display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+    padding:calc(env(safe-area-inset-top,0px) + 10px)
+            calc(env(safe-area-inset-right,0px) + 12px) 0
+            calc(env(safe-area-inset-left,0px) + 12px);
+    pointer-events:none;
+  }
+  .pastille{
+    display:flex;align-items:baseline;gap:6px;
+    background:rgba(255,253,247,.93);
+    border:2px solid rgba(46,39,37,.85);
+    border-radius:999px;
+    padding:5px 15px;
+    font-size:1.35rem;font-weight:800;
+    font-variant-numeric:tabular-nums;
+    box-shadow:0 3px 0 rgba(46,39,37,.22);
+    transition:background .2s,border-color .2s,color .2s;
+  }
+  .pastille small{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.55}
+  #pastilleChrono.alerte{background:#ffe2e2;border-color:#c0392b;color:#c0392b;animation:battement .7s ease-in-out infinite}
+  @keyframes battement{50%{transform:scale(1.07)}}
+
+  #jauge{
+    position:fixed;
+    top:calc(env(safe-area-inset-top,0px) + 58px);
+    left:calc(env(safe-area-inset-left,0px) + 14px);
+    right:calc(env(safe-area-inset-right,0px) + 14px);
+    height:9px;
+    background:rgba(255,253,247,.45);
+    border-radius:999px;
+    overflow:hidden;
+    pointer-events:none;
+  }
+  #jaugeRemplissage{
+    height:100%;width:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg,#fff0b3,#ffc93c);
+    transform-origin:left center;
+  }
+
+  /* ---------------- Écrans ---------------- */
+  .ecran{
+    position:fixed;inset:0;z-index:10;
+    display:flex;align-items:center;justify-content:center;
+    padding:calc(env(safe-area-inset-top,0px) + 20px) 20px calc(env(safe-area-inset-bottom,0px) + 20px);
+    background:radial-gradient(130% 100% at 50% 0%,rgba(47,107,28,.30),rgba(18,44,8,.75));
+    -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+    animation:apparition .25s ease-out;
+  }
+  .ecran.cache{display:none}
+  @keyframes apparition{from{opacity:0}to{opacity:1}}
+
+  .carte{
+    width:100%;max-width:400px;
+    background:var(--creme);
+    border:3px solid var(--encre);
+    border-radius:28px;
+    padding:26px 22px 24px;
+    text-align:center;
+    box-shadow:0 8px 0 rgba(46,39,37,.32),0 20px 34px rgba(0,0,0,.28);
+  }
+  .vache{font-size:3.4rem;line-height:1;margin-bottom:6px}
+  h1{font-size:1.55rem;margin:0 0 10px;line-height:1.15;letter-spacing:-.01em}
+  h1 span{display:block;font-size:.95rem;font-weight:700;opacity:.6;letter-spacing:.02em;margin-top:4px}
+  .regle{font-size:.98rem;line-height:1.5;margin:0 0 18px;opacity:.8}
+  .regle b{background:linear-gradient(180deg,transparent 62%,#ffe08a 62%);padding:0 2px}
+
+  .bouton{
+    font:inherit;font-size:1.25rem;font-weight:800;
+    padding:15px 34px;border-radius:999px;
+    border:3px solid var(--encre);
+    background:linear-gradient(180deg,#ffdd7d,#f7b733);
+    color:var(--encre);
+    box-shadow:0 5px 0 rgba(46,39,37,.75);
+    cursor:pointer;
+    touch-action:manipulation;
+    transition:transform .07s ease,box-shadow .07s ease;
+  }
+  .bouton:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(46,39,37,.75)}
+  .bouton:focus-visible{outline:3px solid #2f6b1c;outline-offset:3px}
+
+  .record{
+    display:inline-flex;align-items:center;gap:8px;
+    margin-top:16px;padding:7px 16px;
+    background:#f1efe6;border-radius:999px;
+    font-size:.92rem;font-weight:700;
+  }
+  .record b{font-variant-numeric:tabular-nums;font-size:1.05rem}
+
+  .scoreFin{
+    font-size:4.6rem;font-weight:800;line-height:1;
+    font-variant-numeric:tabular-nums;
+    color:#2f6b1c;
+    margin:4px 0 2px;
+  }
+  .etiquette{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:.5}
+  #messageRecord{
+    margin:14px auto 0;display:inline-block;
+    padding:7px 16px;border-radius:999px;
+    background:#ffe08a;font-weight:800;font-size:.95rem;
+    animation:battement 1.1s ease-in-out infinite;
+  }
+  .actions{margin-top:22px}
+</style>
+</head>
+<body>
+
+<canvas id="jeu" aria-label="Le pré de Meliza"></canvas>
+
+<div id="hud">
+  <div class="pastille"><span id="score">0</span><small>touffes</small></div>
+  <div class="pastille" id="pastilleChrono"><span id="chrono">60</span><small>sec</small></div>
+</div>
+<div id="jauge"><div id="jaugeRemplissage"></div></div>
+
+<!-- Écran d'accueil -->
+<div class="ecran" id="ecranAccueil">
+  <div class="carte">
+    <div class="vache">🐄</div>
+    <h1>Meliza la vache gourmande<span>60 secondes pour tout brouter</span></h1>
+    <p class="regle">
+      Glisse ton doigt sur le pré : <b>Meliza suit le bout de ton doigt</b>.
+      Chaque touffe d'herbe avalée rapporte <b>1 point</b> et la fait grossir un peu.
+    </p>
+    <button class="bouton" id="btnJouer" type="button">Jouer</button>
+    <div class="record">🏆 Meilleur score : <b id="recordAccueil">0</b></div>
+  </div>
+</div>
+
+<!-- Écran de fin -->
+<div class="ecran cache" id="ecranFin">
+  <div class="carte">
+    <div class="etiquette">Temps écoulé</div>
+    <div class="scoreFin" id="scoreFin">0</div>
+    <div class="etiquette">touffes broutées</div>
+    <div id="messageRecord" hidden>🎉 Nouveau record !</div>
+    <div class="record">🏆 Meilleur score : <b id="recordFin">0</b></div>
+    <div class="actions"><button class="bouton" id="btnRejouer" type="button">Rejouer</button></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ------------------------------------------------------------------
+  //  Réglages
+  // ------------------------------------------------------------------
+  var DUREE_PARTIE = 60;          // secondes
+  var CLE_RECORD   = 'meliza.record';
+  var NB_TOUFFES   = 7;           // touffes présentes simultanément
+  var GAIN_TAILLE  = 0.045;       // grossissement par touffe (multiplicateur)
+  var TAILLE_MAX   = 1.85;
+
+  // ------------------------------------------------------------------
+  //  Raccourcis DOM
+  // ------------------------------------------------------------------
+  var canvas    = document.getElementById('jeu');
+  var ctx       = canvas.getContext('2d');
+  var elScore   = document.getElementById('score');
+  var elChrono  = document.getElementById('chrono');
+  var pastChrono= document.getElementById('pastilleChrono');
+  var elJauge   = document.getElementById('jaugeRemplissage');
+  var ecranAccueil = document.getElementById('ecranAccueil');
+  var ecranFin  = document.getElementById('ecranFin');
+  var elRecordAccueil = document.getElementById('recordAccueil');
+  var elRecordFin = document.getElementById('recordFin');
+  var elScoreFin = document.getElementById('scoreFin');
+  var elMessageRecord = document.getElementById('messageRecord');
+  var btnJouer  = document.getElementById('btnJouer');
+  var btnRejouer= document.getElementById('btnRejouer');
+
+  // ------------------------------------------------------------------
+  //  Le dessin de Meliza (vue de dessus, museau vers la droite)
+  // ------------------------------------------------------------------
+  var SVG_MELIZA = [
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">',
+      '<defs><clipPath id="corps"><ellipse cx="47" cy="50" rx="30" ry="22"/></clipPath></defs>',
+      '<g stroke="#2e2725" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">',
+        // queue
+        '<path d="M18 50 C9 50 7 42 11 36" fill="none"/>',
+        '<circle cx="11" cy="34" r="4.2" fill="#2e2725"/>',
+        // pattes
+        '<ellipse cx="33" cy="28" rx="6.5" ry="5" fill="#fffdf7"/>',
+        '<ellipse cx="33" cy="72" rx="6.5" ry="5" fill="#fffdf7"/>',
+        '<ellipse cx="58" cy="28" rx="6.5" ry="5" fill="#fffdf7"/>',
+        '<ellipse cx="58" cy="72" rx="6.5" ry="5" fill="#fffdf7"/>',
+        // corps
+        '<ellipse cx="47" cy="50" rx="30" ry="22" fill="#fffdf7"/>',
+        '<g clip-path="url(#corps)" stroke="none">',
+          '<ellipse cx="36" cy="38" rx="13" ry="9" fill="#2e2725"/>',
+          '<ellipse cx="50" cy="64" rx="11" ry="8" fill="#2e2725"/>',
+          '<ellipse cx="62" cy="40" rx="8" ry="6" fill="#2e2725"/>',
+        '</g>',
+        // oreilles (la droite est noire)
+        '<ellipse cx="74" cy="33" rx="9" ry="6.5" fill="#fffdf7" transform="rotate(-28 74 33)"/>',
+        '<ellipse cx="74" cy="67" rx="9" ry="6.5" fill="#2e2725" transform="rotate(28 74 67)"/>',
+        // cornes, en avant des oreilles
+        '<ellipse cx="84" cy="33" rx="4.5" ry="6" fill="#f0d292" transform="rotate(-30 84 33)"/>',
+        '<ellipse cx="84" cy="67" rx="4.5" ry="6" fill="#f0d292" transform="rotate(30 84 67)"/>',
+        // tête
+        '<ellipse cx="79" cy="50" rx="16" ry="14" fill="#fffdf7"/>',
+        // museau
+        '<ellipse cx="90" cy="50" rx="8" ry="9" fill="#f3a0ab"/>',
+        '<circle cx="90" cy="46" r="1.7" fill="#c96c7b" stroke="none"/>',
+        '<circle cx="90" cy="54" r="1.7" fill="#c96c7b" stroke="none"/>',
+        // yeux
+        '<circle cx="80" cy="43" r="3.1" fill="#2e2725" stroke="none"/>',
+        '<circle cx="80" cy="57" r="3.1" fill="#2e2725" stroke="none"/>',
+        '<circle cx="81" cy="42" r="1" fill="#fffdf7" stroke="none"/>',
+        '<circle cx="81" cy="56" r="1" fill="#fffdf7" stroke="none"/>',
+      '</g>',
+    '</svg>'
+  ].join('');
+
+  var imageMeliza = new Image();
+  var melizaPrete = false;
+  imageMeliza.onload = function () { melizaPrete = true; };
+  imageMeliza.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(SVG_MELIZA);
+
+  // ------------------------------------------------------------------
+  //  État
+  // ------------------------------------------------------------------
+  var largeur = 0, hauteur = 0, dpr = 1;
+  var u = 1;                      // unité d'échelle selon la taille de l'écran
+  var rayonBase = 22;             // rayon de Meliza à taille normale
+  var margeHaut = 88, margeBas = 26, margeCote = 22;
+
+  var meliza = { x: 0, y: 0, angle: -Math.PI / 2, angleCible: -Math.PI / 2,
+                 cibleX: 0, cibleY: 0, taille: 1, phase: 0, bouge: 0 };
+
+  var touffes = [], particules = [], bulles = [];
+  var enCours = false, tempsJeu = 0, score = 0, record = 0, recordBattu = false;
+  var tempsAnim = 0, dernierTs = 0, pointeurActif = false;
+  var dernierChronoVu = -1;
+
+  var fond = document.createElement('canvas');
+  var fondCtx = fond.getContext('2d');
+
+  function rayonMeliza() { return rayonBase * meliza.taille; }
+  function borne(v, min, max) { return v < min ? min : (v > max ? max : v); }
+
+  // Générateur pseudo-aléatoire à graine : le décor reste stable au redimensionnement.
+  function alea(graine) {
+    var s = graine >>> 0 || 1;
+    return function () {
+      s ^= s << 13; s >>>= 0;
+      s ^= s >> 17;
+      s ^= s << 5;  s >>>= 0;
+      return s / 4294967296;
+    };
+  }
+
+  // ------------------------------------------------------------------
+  //  Record (localStorage)
+  // ------------------------------------------------------------------
+  function lireRecord() {
+    try {
+      var v = parseInt(window.localStorage.getItem(CLE_RECORD), 10);
+      return isFinite(v) && v > 0 ? v : 0;
+    } catch (e) { return 0; }
+  }
+  function ecrireRecord(v) {
+    try { window.localStorage.setItem(CLE_RECORD, String(v)); } catch (e) {}
+  }
+
+  // ------------------------------------------------------------------
+  //  Dimensions et décor de fond
+  // ------------------------------------------------------------------
+  function creerFond() {
+    fond.width = Math.max(1, Math.round(largeur * dpr));
+    fond.height = Math.max(1, Math.round(hauteur * dpr));
+    var c = fondCtx;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var g = c.createLinearGradient(0, 0, 0, hauteur);
+    g.addColorStop(0, '#a9e06b');
+    g.addColorStop(0.55, '#7cc94a');
+    g.addColorStop(1, '#4c9a2a');
+    c.fillStyle = g;
+    c.fillRect(0, 0, largeur, hauteur);
+
+    // Bandes de tonte
+    c.save();
+    c.globalAlpha = 0.055;
+    c.fillStyle = '#ffffff';
+    var bande = Math.max(46, hauteur / 13);
+    for (var y = 0; y < hauteur; y += bande * 2) c.fillRect(0, y, largeur, bande);
+    c.restore();
+
+    // Pâquerettes
+    var rnd = alea(20260929);
+    var nb = Math.round((largeur * hauteur) / 42000);
+    for (var i = 0; i < nb; i++) {
+      dessinerPaquerette(c, rnd() * largeur, rnd() * hauteur, (2.2 + rnd() * 2.2) * u, rnd() * Math.PI);
+    }
+  }
+
+  function dessinerPaquerette(c, x, y, r, rotation) {
+    c.save();
+    c.translate(x, y);
+    c.rotate(rotation);
+    c.globalAlpha = 0.8;
+    c.fillStyle = '#fffdf7';
+    for (var p = 0; p < 5; p++) {
+      c.beginPath();
+      c.ellipse(Math.cos(p * 1.2566) * r, Math.sin(p * 1.2566) * r, r * 0.78, r * 0.5, p * 1.2566, 0, 6.2832);
+      c.fill();
+    }
+    c.fillStyle = '#ffd166';
+    c.beginPath();
+    c.arc(0, 0, r * 0.62, 0, 6.2832);
+    c.fill();
+    c.restore();
+  }
+
+  function redimensionner() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    largeur = canvas.clientWidth || window.innerWidth;
+    hauteur = canvas.clientHeight || window.innerHeight;
+    canvas.width  = Math.round(largeur * dpr);
+    canvas.height = Math.round(hauteur * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    u = borne(Math.min(largeur, hauteur) / 300, 0.85, 2.4);
+    rayonBase = 22 * u;
+    margeHaut = Math.min(88, hauteur * 0.18);
+    margeCote = Math.max(18, 22 * u);
+    margeBas  = Math.max(18, 26 * u);
+
+    creerFond();
+
+    // Tout le monde reste dans le pré
+    meliza.x = borne(meliza.x || largeur / 2, rayonBase, largeur - rayonBase);
+    meliza.y = borne(meliza.y || hauteur * 0.62, rayonBase, hauteur - rayonBase);
+    meliza.cibleX = meliza.x;
+    meliza.cibleY = meliza.y;
+    for (var i = 0; i < touffes.length; i++) {
+      var t = touffes[i];
+      t.r = 13 * u;
+      t.x = borne(t.x, margeCote, largeur - margeCote);
+      t.y = borne(t.y, margeHaut, hauteur - margeBas);
+    }
+  }
+
+  // ------------------------------------------------------------------
+  //  Herbe
+  // ------------------------------------------------------------------
+  function nouvelleTouffe(immediate) {
+    var r = 13 * u;
+    var x = 0, y = 0, ok = false;
+    for (var essai = 0; essai < 40 && !ok; essai++) {
+      x = margeCote + Math.random() * Math.max(1, largeur - 2 * margeCote);
+      y = margeHaut + Math.random() * Math.max(1, hauteur - margeHaut - margeBas);
+      ok = Math.hypot(x - meliza.x, y - meliza.y) > rayonBase * 2.8;
+      if (ok) {
+        for (var i = 0; i < touffes.length; i++) {
+          if (Math.hypot(x - touffes[i].x, y - touffes[i].y) < r * 2.6) { ok = false; break; }
+        }
+      }
+    }
+    return { x: x, y: y, r: r, phase: Math.random() * 6.2832, apparition: immediate ? 1 : 0 };
+  }
+
+  function dessinerTouffe(t) {
+    var a = t.apparition;
+    if (a <= 0) return;
+    var grossissement = a * a * (3 - 2 * a);          // lissage
+    var s = t.r * grossissement;
+    var balancement = Math.sin(tempsAnim * 1.8 + t.phase) * 0.12;
+
+    ctx.save();
+    ctx.translate(t.x, t.y);
+
+    // ombre au sol
+    ctx.fillStyle = 'rgba(30,60,15,.16)';
+    ctx.beginPath();
+    ctx.ellipse(0, s * 0.28, s * 0.95, s * 0.35, 0, 0, 6.2832);
+    ctx.fill();
+
+    ctx.rotate(balancement);
+    var couleurs = ['#3c8222', '#4fa32c', '#68c23f', '#57b83a', '#2f7d1f'];
+    for (var i = 0; i < 5; i++) {
+      var angle = -Math.PI / 2 + (i - 2) * 0.34 + balancement * 0.6;
+      var haut = s * (1.7 + (i === 2 ? 0.75 : (i === 0 || i === 4 ? 0.05 : 0.42)));
+      var tx = Math.cos(angle) * haut;
+      var ty = Math.sin(angle) * haut;
+      var demi = s * (0.36 - i * 0.02 + (i === 2 ? 0.06 : 0));
+      var perp = angle + Math.PI / 2;
+      ctx.fillStyle = couleurs[i];
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(perp) * demi, Math.sin(perp) * demi);
+      ctx.quadraticCurveTo(tx * 0.45 + Math.cos(perp) * demi * 0.6, ty * 0.62,
+                           tx, ty);
+      ctx.quadraticCurveTo(tx * 0.45 - Math.cos(perp) * demi * 0.6, ty * 0.62,
+                           -Math.cos(perp) * demi, -Math.sin(perp) * demi);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // ------------------------------------------------------------------
+  //  Meliza
+  // ------------------------------------------------------------------
+  function dessinerMeliza() {
+    var r = rayonMeliza();
+    var taille = r * 2.9;
+
+    ctx.save();
+    ctx.translate(meliza.x, meliza.y);
+    ctx.rotate(meliza.angle);
+
+    // ombre portée
+    ctx.fillStyle = 'rgba(30,60,15,.22)';
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.05, r * 0.22, taille * 0.42, taille * 0.33, 0, 0, 6.2832);
+    ctx.fill();
+
+    // petit dandinement de la marche
+    var bob = Math.sin(meliza.phase) * r * 0.07 * meliza.bouge;
+    var etirement = Math.sin(meliza.phase * 2) * 0.022 * meliza.bouge;
+    ctx.translate(0, bob);
+    ctx.scale(1 + etirement, 1 - etirement);
+
+    if (melizaPrete) {
+      ctx.drawImage(imageMeliza, -taille / 2, -taille / 2, taille, taille);
+    } else {
+      ctx.fillStyle = '#fffdf7';
+      ctx.strokeStyle = '#2e2725';
+      ctx.lineWidth = Math.max(1.5, r * 0.09);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, taille * 0.36, taille * 0.28, 0, 0, 6.2832);
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // ------------------------------------------------------------------
+  //  Effets
+  // ------------------------------------------------------------------
+  function ajouterParticules(x, y, r) {
+    for (var i = 0; i < 7; i++) {
+      var a = Math.random() * 6.2832;
+      var v = (0.7 + Math.random() * 1.3) * r * 2.2;
+      particules.push({
+        x: x, y: y,
+        vx: Math.cos(a) * v, vy: Math.sin(a) * v - r * 0.8,
+        taille: r * (0.16 + Math.random() * 0.16),
+        vie: 0, duree: 0.45 + Math.random() * 0.25,
+        couleur: ['#3c8222', '#68c23f', '#57b83a'][i % 3]
+      });
+    }
+  }
+
+  function majEffets(dt) {
+    var i;
+    for (i = particules.length - 1; i >= 0; i--) {
+      var p = particules[i];
+      p.vie += dt;
+      if (p.vie >= p.duree) { particules.splice(i, 1); continue; }
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += 120 * u * dt;
+      p.vx *= 0.96;
+    }
+    for (i = bulles.length - 1; i >= 0; i--) {
+      var b = bulles[i];
+      b.vie += dt;
+      if (b.vie >= b.duree) { bulles.splice(i, 1); continue; }
+      b.y -= 34 * u * dt;
+    }
+  }
+
+  function dessinerEffets() {
+    var i;
+    for (i = 0; i < particules.length; i++) {
+      var p = particules[i];
+      ctx.globalAlpha = 1 - p.vie / p.duree;
+      ctx.fillStyle = p.couleur;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.taille, 0, 6.2832);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '800 ' + Math.round(17 * u) + 'px system-ui, sans-serif';
+    ctx.lineWidth = Math.max(2, 3.5 * u);
+    ctx.strokeStyle = 'rgba(255,253,247,.95)';
+    ctx.fillStyle = '#2f6b1c';
+    for (i = 0; i < bulles.length; i++) {
+      var b = bulles[i];
+      ctx.globalAlpha = Math.min(1, 2.2 * (1 - b.vie / b.duree));
+      ctx.strokeText(b.texte, b.x, b.y);
+      ctx.fillText(b.texte, b.x, b.y);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ------------------------------------------------------------------
+  //  Déroulement de la partie
+  // ------------------------------------------------------------------
+  function majScore() { elScore.textContent = String(score); }
+
+  function majChrono(force) {
+    var restant = Math.max(0, Math.ceil(DUREE_PARTIE - tempsJeu));
+    if (force || restant !== dernierChronoVu) {
+      dernierChronoVu = restant;
+      elChrono.textContent = String(restant);
+      if (restant <= 10) pastChrono.classList.add('alerte');
+      else pastChrono.classList.remove('alerte');
+    }
+    var fraction = 1 - tempsJeu / DUREE_PARTIE;
+    elJauge.style.transform = 'scaleX(' + borne(fraction, 0, 1) + ')';
+  }
+
+  function reinitialiser() {
+    score = 0; tempsJeu = 0; recordBattu = false;
+    meliza.taille = 1; meliza.phase = 0; meliza.bouge = 0;
+    meliza.x = largeur / 2;
+    meliza.y = hauteur * 0.62;
+    meliza.cibleX = meliza.x;
+    meliza.cibleY = meliza.y;
+    meliza.angle = -Math.PI / 2;
+    meliza.angleCible = -Math.PI / 2;
+    particules = []; bulles = []; touffes = [];
+    for (var i = 0; i < NB_TOUFFES; i++) touffes.push(nouvelleTouffe(true));
+    dernierChronoVu = -1;
+    majScore();
+    majChrono(true);
+  }
+
+  function demarrer() {
+    reinitialiser();
+    ecranAccueil.classList.add('cache');
+    ecranFin.classList.add('cache');
+    enCours = true;
+  }
+
+  function finir() {
+    enCours = false;
+    meliza.bouge = 0;
+    elScoreFin.textContent = String(score);
+    elRecordFin.textContent = String(record);
+    elMessageRecord.hidden = !recordBattu;
+    ecranFin.classList.remove('cache');
+  }
+
+  function manger(index) {
+    var t = touffes[index];
+    score++;
+    if (score > record) { record = score; ecrireRecord(record); recordBattu = true; }
+    meliza.taille = Math.min(TAILLE_MAX, meliza.taille + GAIN_TAILLE);
+    ajouterParticules(t.x, t.y, t.r);
+    bulles.push({ x: t.x, y: t.y - t.r, texte: '+1', vie: 0, duree: 0.7 });
+    majScore();
+    touffes.splice(index, 1);
+    touffes.push(nouvelleTouffe(false));
+  }
+
+  // ------------------------------------------------------------------
+  //  Mise à jour
+  // ------------------------------------------------------------------
+  function maj(dt) {
+    tempsAnim += dt;
+
+    for (var i = 0; i < touffes.length; i++) {
+      if (touffes[i].apparition < 1) {
+        touffes[i].apparition = Math.min(1, touffes[i].apparition + dt * 3.5);
+      }
+    }
+    majEffets(dt);
+
+    if (!enCours) { meliza.bouge = Math.max(0, meliza.bouge - dt * 6); return; }
+
+    tempsJeu += dt;
+    if (tempsJeu >= DUREE_PARTIE) { tempsJeu = DUREE_PARTIE; majChrono(true); finir(); return; }
+    majChrono(false);
+
+    // Déplacement : Meliza glisse vers le doigt
+    var dx = meliza.cibleX - meliza.x;
+    var dy = meliza.cibleY - meliza.y;
+    var distance = Math.hypot(dx, dy);
+    var f = 1 - Math.exp(-9 * dt);
+
+    if (distance > 0.6) {
+      meliza.x += dx * f;
+      meliza.y += dy * f;
+      meliza.angleCible = Math.atan2(dy, dx);
+      meliza.bouge = Math.min(1, meliza.bouge + dt * 5);
+      meliza.phase += dt * (7 + Math.min(distance, 260) * 0.035);
+    } else {
+      meliza.bouge = Math.max(0, meliza.bouge - dt * 6);
+      meliza.phase += dt * 4 * meliza.bouge;
+    }
+
+    // Rotation douce vers la direction voulue
+    var ecart = meliza.angleCible - meliza.angle;
+    while (ecart > Math.PI) ecart -= 6.2832;
+    while (ecart < -Math.PI) ecart += 6.2832;
+    meliza.angle += ecart * Math.min(1, dt * 12);
+
+    // Meliza reste dans le pré
+    var r = rayonMeliza();
+    meliza.x = borne(meliza.x, r, largeur - r);
+    meliza.y = borne(meliza.y, r + margeHaut * 0.35, hauteur - r);
+
+    // Brouter
+    var portee = r * 1.2;
+    for (var j = touffes.length - 1; j >= 0; j--) {
+      var t = touffes[j];
+      if (t.apparition < 0.35) continue;
+      if (Math.hypot(t.x - meliza.x, t.y - meliza.y) < portee + t.r * 0.6) manger(j);
+    }
+  }
+
+  // ------------------------------------------------------------------
+  //  Rendu
+  // ------------------------------------------------------------------
+  function dessiner() {
+    ctx.clearRect(0, 0, largeur, hauteur);
+    ctx.drawImage(fond, 0, 0, largeur, hauteur);
+
+    var i;
+    // Les touffes les plus basses passent devant, pour la profondeur
+    touffes.sort(function (a, b) { return a.y - b.y; });
+    var melizaDessinee = false;
+    for (i = 0; i < touffes.length; i++) {
+      if (!melizaDessinee && touffes[i].y > meliza.y) {
+        dessinerMeliza();
+        melizaDessinee = true;
+      }
+      dessinerTouffe(touffes[i]);
+    }
+    if (!melizaDessinee) dessinerMeliza();
+
+    dessinerEffets();
+  }
+
+  // ------------------------------------------------------------------
+  //  Boucle principale
+  // ------------------------------------------------------------------
+  function boucle(ts) {
+    window.requestAnimationFrame(boucle);
+    if (!dernierTs) dernierTs = ts;
+    var dt = (ts - dernierTs) / 1000;
+    dernierTs = ts;
+    if (!(dt > 0)) dt = 0;
+    if (dt > 0.05) dt = 0.05;         // l'onglet revient au premier plan : pas de saut
+    maj(dt);
+    dessiner();
+  }
+
+  // ------------------------------------------------------------------
+  //  Commandes au doigt
+  // ------------------------------------------------------------------
+  function viser(e) {
+    var rect = canvas.getBoundingClientRect();
+    meliza.cibleX = borne(e.clientX - rect.left, 0, largeur);
+    meliza.cibleY = borne(e.clientY - rect.top, 0, hauteur);
+  }
+
+  canvas.addEventListener('pointerdown', function (e) {
+    if (!enCours) return;
+    pointeurActif = true;
+    if (canvas.setPointerCapture) { try { canvas.setPointerCapture(e.pointerId); } catch (err) {} }
+    viser(e);
+    e.preventDefault();
+  }, { passive: false });
+
+  canvas.addEventListener('pointermove', function (e) {
+    if (!enCours || !pointeurActif) return;
+    viser(e);
+    e.preventDefault();
+  }, { passive: false });
+
+  function relacher() { pointeurActif = false; }
+  canvas.addEventListener('pointerup', relacher);
+  canvas.addEventListener('pointercancel', relacher);
+
+  // Le doigt peut sortir du canvas : on continue de suivre.
+  window.addEventListener('pointermove', function (e) {
+    if (!enCours || !pointeurActif) return;
+    viser(e);
+  }, { passive: true });
+
+  document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+
+  btnJouer.addEventListener('click', demarrer);
+  btnRejouer.addEventListener('click', demarrer);
+  window.addEventListener('resize', redimensionner);
+  window.addEventListener('orientationchange', function () {
+    window.setTimeout(redimensionner, 120);
+  });
+
+  // ------------------------------------------------------------------
+  //  Démarrage
+  // ------------------------------------------------------------------
+  record = lireRecord();
+  elRecordAccueil.textContent = String(record);
+  elRecordFin.textContent = String(record);
+
+  redimensionner();
+  reinitialiser();
+  window.requestAnimationFrame(boucle);
+
+  // Mode hors-ligne
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>

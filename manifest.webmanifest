@@ -1,0 +1,35 @@
+{
+  "name": "Meliza la vache gourmande",
+  "short_name": "Meliza",
+  "description": "Guide Meliza du bout du doigt sur le pré et mange un maximum de touffes d'herbe en 60 secondes.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#4c9a2a",
+  "theme_color": "#4c9a2a",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
