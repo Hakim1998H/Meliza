@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Meliza la vache gourmande</title>
-<meta name="description" content="Guide Meliza du bout du doigt sur le pré et mange un maximum de touffes d'herbe en 60 secondes, en évitant cailloux et clôtures.">
-<meta name="theme-color" content="#4c9a2a">
+<meta name="description" content="Guide Meliza du bout du doigt et broute un maximum d'herbe, de gâteaux et de cachettes d'Hakim en 60 secondes, en évitant cailloux et clôtures.">
+<meta id="metaTheme" name="theme-color" content="#4c9a2a">
 <meta name="color-scheme" content="light">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -215,6 +215,53 @@
   .hkEclair:nth-of-type(3){animation-delay:1.2s}
   @keyframes hkBrille{0%,100%{opacity:.2;transform:scale(.65)}50%{opacity:1;transform:scale(1.15)}}
 
+  /* ---------------- Niveau en cours ---------------- */
+  #pastilleNiveau{
+    position:fixed;
+    top:calc(env(safe-area-inset-top,0px) + 74px);
+    left:calc(env(safe-area-inset-left,0px) + 14px);
+    display:flex;align-items:baseline;gap:6px;
+    background:rgba(255,253,247,.93);
+    border:2px solid rgba(46,39,37,.85);
+    border-radius:999px;
+    padding:3px 12px;
+    font-size:.82rem;font-weight:800;
+    font-variant-numeric:tabular-nums;
+    box-shadow:0 2px 0 rgba(46,39,37,.22);
+    pointer-events:none;
+    transition:background .2s,border-color .2s,color .2s,box-shadow .25s;
+  }
+  #pastilleNiveau small{font-size:.66rem;font-weight:700;opacity:.58}
+  #pastilleNiveau.gain{background:#fff3cf;border-color:#d99a1f;color:#a5700f;box-shadow:0 0 0 7px rgba(255,209,102,.4)}
+
+  /* ---------------- Annonce brève du niveau ---------------- */
+  #annonceNiveau{
+    position:fixed;inset:0;z-index:20;
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+    pointer-events:none;
+  }
+  #annonceNiveau .annonceCarte{
+    background:var(--creme);
+    border:3px solid var(--encre);
+    border-radius:24px;
+    padding:15px 30px 17px;
+    text-align:center;
+    box-shadow:0 8px 0 rgba(46,39,37,.32),0 18px 30px rgba(0,0,0,.3);
+    opacity:0;
+  }
+  #annonceNiveau.visible .annonceCarte{animation:popNiveau 1.4s cubic-bezier(.2,1.3,.45,1) both}
+  @keyframes popNiveau{
+    0%{opacity:0;transform:scale(.55) rotate(-5deg)}
+    16%{opacity:1;transform:scale(1.08) rotate(2deg)}
+    28%{transform:scale(1) rotate(0)}
+    78%{opacity:1;transform:scale(1)}
+    100%{opacity:0;transform:scale(1.06)}
+  }
+  .annonceEmoji{font-size:1.7rem;line-height:1}
+  .annonceTitre{font-size:1.9rem;font-weight:800;line-height:1.12;letter-spacing:-.01em}
+  .annonceSous{font-size:.9rem;font-weight:700;opacity:.6;margin-top:3px}
+
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001s !important;animation-iteration-count:1 !important}
     .hkBouteille{transform:rotate(25deg)}
@@ -231,9 +278,19 @@
   <div class="pastille" id="pastilleChrono"><span id="chrono">60</span><small>sec</small></div>
 </div>
 <div id="jauge"><div id="jaugeRemplissage"></div></div>
+<div id="pastilleNiveau"><span id="niveau">Niveau 1</span><small id="niveauCible">→ 40 pts</small></div>
 
 <!-- Bouton du son : toujours accessible, même sur les écrans -->
 <button id="btnSon" type="button" aria-pressed="true" aria-label="Couper le son" title="Couper le son">🔊</button>
+
+<!-- Annonce brève au passage au niveau suivant -->
+<div id="annonceNiveau" hidden aria-live="polite">
+  <div class="annonceCarte">
+    <div class="annonceEmoji" id="annonceEmoji">🌿</div>
+    <div class="annonceTitre" id="annonceTitre">Niveau 2 !</div>
+    <div class="annonceSous" id="annonceSous">Le champ d'automne</div>
+  </div>
+</div>
 
 <!-- Écran d'accueil -->
 <div class="ecran" id="ecranAccueil">
@@ -244,8 +301,10 @@
       <ul>
         <li>Glisse ton doigt : <b>Meliza suit le bout de ton doigt</b>.</li>
         <li>L'herbe <b>fane de plus en plus vite</b> : mange sans traîner.</li>
-        <li>Les <b>touffes dorées</b> rapportent <b>5 points</b> au lieu d'1.</li>
+        <li>Les <b>touffes dorées</b> et les <b>gâteaux 🍰</b> rapportent <b>5 points</b> au lieu d'1.</li>
+        <li>Une touffe qui <b>frémit plus fort</b> cache <b>Hakim</b> : touche-la et il surgit, <b>+10 points</b> !</li>
         <li>Évite les <b>cailloux</b> (−2 s) et les <b>clôtures</b> (−2 points).</li>
+        <li>Tous les <b>40 points</b>, puis un peu plus à chaque fois, tu changes de <b>niveau</b> : le pré se transforme et la partie se corse.</li>
       </ul>
     </div>
     <button class="bouton" id="btnJouer" type="button">Jouer</button>
@@ -261,6 +320,7 @@
     <div class="scoreFin" id="scoreFin">0</div>
     <div class="etiquette">points broutés</div>
     <div id="messageRecord" hidden>🎉 Nouveau record !</div>
+    <div class="record">🌟 Niveau atteint : <b id="niveauFin">1</b></div>
 
     <!-- Hakim n'apparaît que lorsqu'un nouveau record est établi -->
     <div class="hakim" id="hakim" hidden>
@@ -375,6 +435,9 @@
   var CHANCE_DOREE = 0.12;        // proportion de touffes dorées
   var POINTS_DOREE = 5;
 
+  var CHANCE_GATEAU = 0.09;       // proportion de gâteaux
+  var POINTS_GATEAU = 5;
+
   var OBSTACLES_DEPART = 2;
   var OBSTACLES_MAX    = 7;
   var PENALITE_TEMPS   = 2;       // secondes perdues sur un caillou
@@ -382,6 +445,101 @@
 
   var GAIN_TAILLE  = 0.045;       // grossissement par touffe (multiplicateur)
   var TAILLE_MAX   = 1.85;
+
+  var DUREE_TRANSITION = 1.4;     // durée de l'écran « Niveau 2 ! »
+  var DUREE_HAKIM      = 3.4;     // secondes pendant lesquelles Hakim reste sorti
+  var POINTS_HAKIM     = 10;
+
+  // ------------------------------------------------------------------
+  //  Les niveaux : trois décors qui reviennent en boucle, de plus en
+  //  plus exigeants. Le décor ne change qu'à l'annonce du niveau.
+  // ------------------------------------------------------------------
+  var DECORS = [
+    { cle: 'pre',     nom: 'Le pré vert',        emoji: '🌿', fond: '#4c9a2a' },
+    { cle: 'automne', nom: "Le champ d'automne", emoji: '🍂', fond: '#a8762a' },
+    { cle: 'nuit',    nom: 'La nuit étoilée',    emoji: '🌙', fond: '#16233f' }
+  ];
+
+  function decorDuNiveau(n) { return DECORS[(n - 1) % DECORS.length]; }
+
+  // Score à atteindre pour le niveau n : 40, 100, 180, 280…
+  function seuilNiveau(n) {
+    var s = 0;
+    for (var i = 2; i <= n; i++) s += 20 * i;
+    return s;
+  }
+
+  // Réglages courants, recalculés à chaque changement de niveau.
+  var NIV = {
+    niveau: 1, decor: DECORS[0],
+    vieDepart: VIE_DEPART, vieFin: VIE_FIN,
+    chanceDoree: CHANCE_DOREE, chanceGateau: CHANCE_GATEAU,
+    obstaclesDepart: OBSTACLES_DEPART, obstaclesMax: OBSTACLES_MAX,
+    delaiObstacle: 3.5
+  };
+
+  function reglerNiveau(n) {
+    var k = n - 1;                                  // 0 pour le niveau 1
+    NIV.niveau          = n;
+    NIV.decor           = decorDuNiveau(n);
+    NIV.vieDepart       = Math.max(3.6, VIE_DEPART - k * 1.25);
+    NIV.vieFin          = Math.max(1.4, VIE_FIN - k * 0.22);
+    NIV.chanceDoree     = Math.min(0.20, CHANCE_DOREE + k * 0.02);
+    NIV.chanceGateau    = Math.min(0.18, CHANCE_GATEAU + k * 0.02);
+    NIV.obstaclesDepart = Math.min(6, OBSTACLES_DEPART + k);
+    NIV.obstaclesMax    = Math.min(16, OBSTACLES_MAX + k * 2);
+    NIV.delaiObstacle   = Math.max(1.7, 3.5 - k * 0.35);
+  }
+
+  // ------------------------------------------------------------------
+  //  Palettes des trois décors (le fond est cuit une fois par niveau)
+  // ------------------------------------------------------------------
+  var PALETTES = {
+    pre: {
+      ciel: ['#6ec1e8', '#a9ddf2', '#ddf1fb'],
+      astre: { type: 'soleil', x: 0.5, y: 0.44,
+               teinte: ['rgba(255,250,214,.95)', 'rgba(255,240,170,.42)', 'rgba(255,240,170,0)'] },
+      colline: '#8ec96a',
+      bosquet: '#79bb56',
+      pre: ['#a9e06b', '#7cc94a', '#4c9a2a'],
+      bandes: 'rgba(255,255,255,.055)',
+      fleurs: 'jour',
+      nuage: { clair: '#ffffff', ombre: '#dceffb', alpha: 1 },
+      etoiles: 0,
+      lucioles: 0,
+      teinte: null
+    },
+    automne: {
+      ciel: ['#dd8639', '#f0b76c', '#f9dfb6'],
+      astre: { type: 'soleil', x: 0.62, y: 0.5,
+               teinte: ['rgba(255,246,214,.9)', 'rgba(255,214,140,.4)', 'rgba(255,214,140,0)'] },
+      colline: '#c9903c',
+      bosquet: '#ad6d2b',
+      pre: ['#e8c66b', '#d6a746', '#a8762a'],
+      bandes: 'rgba(255,246,221,.06)',
+      fleurs: 'automne',
+      nuage: { clair: '#fff3e0', ombre: '#efd3ae', alpha: 0.9 },
+      etoiles: 0,
+      lucioles: 0,
+      teinte: 'rgba(120,64,8,.06)'
+    },
+    nuit: {
+      ciel: ['#0a1530', '#1b2f5e', '#34528a'],
+      astre: { type: 'lune', x: 0.74, y: 0.34,
+               teinte: ['rgba(226,236,255,.95)', 'rgba(160,190,255,.28)', 'rgba(160,190,255,0)'] },
+      colline: '#22422f',
+      bosquet: '#2b5039',
+      pre: ['#3d6b46', '#2c5236', '#1a3323'],
+      bandes: 'rgba(190,220,255,.05)',
+      fleurs: 'nuit',
+      nuage: { clair: '#4b6ca8', ombre: '#2c4470', alpha: 0.38 },
+      etoiles: 1,
+      lucioles: 1,
+      teinte: null
+    }
+  };
+
+  function palette() { return PALETTES[NIV.decor.cle] || PALETTES.pre; }
 
   // ------------------------------------------------------------------
   //  Raccourcis DOM
@@ -401,6 +559,14 @@
   var elScoreFin = document.getElementById('scoreFin');
   var elMessageRecord = document.getElementById('messageRecord');
   var elHakim   = document.getElementById('hakim');
+  var elNiveau  = document.getElementById('niveau');
+  var elNiveauCible = document.getElementById('niveauCible');
+  var elNiveauFin = document.getElementById('niveauFin');
+  var pastNiveau = document.getElementById('pastilleNiveau');
+  var elAnnonce = document.getElementById('annonceNiveau');
+  var elAnnonceTitre = document.getElementById('annonceTitre');
+  var elAnnonceSous = document.getElementById('annonceSous');
+  var elAnnonceEmoji = document.getElementById('annonceEmoji');
   var btnJouer  = document.getElementById('btnJouer');
   var btnRejouer= document.getElementById('btnRejouer');
   var btnSon    = document.getElementById('btnSon');
@@ -593,6 +759,38 @@
     note(1567.98, t + 0.3, 0.5, 0.09, 'sine');
   }
 
+  // Petit air espiègle quand Hakim surgit de sa touffe.
+  function sonHakim() {
+    if (!pret()) return;
+    var c = audio, t = c.currentTime + 0.01;
+    note(587.33, t, 0.14, 0.16, 'triangle');
+    note(783.99, t + 0.1, 0.14, 0.16, 'triangle');
+    note(1046.50, t + 0.2, 0.32, 0.17, 'triangle');
+    note(1318.51, t + 0.3, 0.3, 0.1, 'sine');
+
+    // le petit « boing » de la surprise
+    var o = c.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(260, t);
+    o.frequency.exponentialRampToValueAtTime(700, t + 0.12);
+    var g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.14, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+    o.connect(g); g.connect(gainMaitre);
+    o.start(t); o.stop(t + 0.22);
+  }
+
+  // Montée de niveau : arpège qui monte, ponctué d'un meuglement.
+  function sonNiveau() {
+    if (!pret()) return;
+    var t = audio.currentTime + 0.01;
+    var notes = [523.25, 698.46, 880.00, 1174.66];
+    for (var i = 0; i < notes.length; i++) note(notes[i], t + i * 0.09, 0.34, 0.15, 'triangle');
+    note(1567.98, t + 0.36, 0.62, 0.11, 'sine');
+    meuglement(t + 0.2, 0.16);
+  }
+
   // ------------------------------------------------------------------
   //  Vibrations
   // ------------------------------------------------------------------
@@ -650,6 +848,55 @@
   imageMeliza.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(SVG_MELIZA);
 
   // ------------------------------------------------------------------
+  //  Hakim, le voisin moustachu, en habit de cache-cache
+  // ------------------------------------------------------------------
+  var SVG_HAKIM = [
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">',
+      // bras levés : « coucou ! »
+      '<path d="M32 68 C19 62 12 49 15 36" fill="none" stroke="#2e2725" stroke-width="13" stroke-linecap="round"/>',
+      '<path d="M32 68 C19 62 12 49 15 36" fill="none" stroke="#f2c49b" stroke-width="8" stroke-linecap="round"/>',
+      '<path d="M68 68 C81 62 88 49 85 36" fill="none" stroke="#2e2725" stroke-width="13" stroke-linecap="round"/>',
+      '<path d="M68 68 C81 62 88 49 85 36" fill="none" stroke="#f2c49b" stroke-width="8" stroke-linecap="round"/>',
+      '<g stroke="#2e2725" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">',
+        '<circle cx="15" cy="33" r="6.5" fill="#f2c49b"/>',
+        '<circle cx="85" cy="33" r="6.5" fill="#f2c49b"/>',
+        // corps
+        '<path d="M31 100 C31 78 39 69 50 69 C61 69 69 78 69 100 Z" fill="#5b8fd6"/>',
+        '<path d="M44 69 h12 v-9 h-12 z" fill="#f2c49b"/>',
+        // oreilles
+        '<circle cx="27" cy="42" r="5.5" fill="#f2c49b"/>',
+        '<circle cx="73" cy="42" r="5.5" fill="#f2c49b"/>',
+        // tête
+        '<circle cx="50" cy="40" r="23" fill="#f2c49b"/>',
+        // casquette
+        '<path d="M29 32 C27 12 38 6 50 6 C62 6 73 12 71 32 Z" fill="#c0392b"/>',
+        '<path d="M69 26 C83 24 91 30 91 35 C91 39 83 41 75 40 L69 38 Z" fill="#a5301f"/>',
+        '<circle cx="50" cy="7.5" r="3.6" fill="#8e2418" stroke-width="2"/>',
+        // sourcils
+        '<path d="M36 33 q6 -5 12 -2" fill="none" stroke="#3a2a22" stroke-width="3"/>',
+        '<path d="M64 33 q-6 -5 -12 -2" fill="none" stroke="#3a2a22" stroke-width="3"/>',
+        // yeux
+        '<circle cx="41" cy="42" r="3" fill="#2e2725" stroke="none"/>',
+        '<circle cx="59" cy="42" r="3" fill="#2e2725" stroke="none"/>',
+        '<circle cx="42" cy="41" r="1" fill="#fffdf7" stroke="none"/>',
+        '<circle cx="60" cy="41" r="1" fill="#fffdf7" stroke="none"/>',
+        // joues et nez
+        '<circle cx="33" cy="50" r="5" fill="#f19a9a" opacity=".4" stroke="none"/>',
+        '<circle cx="67" cy="50" r="5" fill="#f19a9a" opacity=".4" stroke="none"/>',
+        '<path d="M50 44 q5 6 -1 9" fill="none" stroke="#d99a6c" stroke-width="3.4"/>',
+        // la moustache
+        '<path d="M50 58 C41 51 30 54 26 61 C33 66 44 65 50 58 Z" fill="#3a2a22" stroke-width="2.4"/>',
+        '<path d="M50 58 C59 51 70 54 74 61 C67 66 56 65 50 58 Z" fill="#3a2a22" stroke-width="2.4"/>',
+      '</g>',
+    '</svg>'
+  ].join('');
+
+  var imageHakim = new Image();
+  var hakimPrete = false;
+  imageHakim.onload = function () { hakimPrete = true; };
+  imageHakim.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(SVG_HAKIM);
+
+  // ------------------------------------------------------------------
   //  État
   // ------------------------------------------------------------------
   var largeur = 0, hauteur = 0, dpr = 1;
@@ -660,12 +907,16 @@
   var meliza = { x: 0, y: 0, angle: -Math.PI / 2, angleCible: -Math.PI / 2,
                  cibleX: 0, cibleY: 0, taille: 1, phase: 0, bouge: 0, machage: 0, immu: 0 };
 
-  var touffes = [], obstacles = [], particules = [], bulles = [], nuages = [];
+  var touffes = [], obstacles = [], particules = [], bulles = [], nuages = [], lucioles = [];
   var enCours = false, tempsJeu = 0, score = 0, record = 0, recordBattu = false, fanfareJouee = false;
   var tempsAnim = 0, dernierTs = 0, pointeurActif = false;
   var dernierChronoVu = -1, dernierScoreVu = -1;
   var tempsProchainObstacle = 4;
   var secousse = 0, flashRouge = 0;
+  var transition = 0;             // > 0 pendant l'annonce « Niveau 2 ! »
+
+  // Hakim, tapi derrière une touffe : il sort quand Meliza la broute.
+  var hakim = { visible: false, x: 0, y: 0, t: 0, duree: DUREE_HAKIM, phase: 0 };
 
   var fond = document.createElement('canvas');
   var fondCtx = fond.getContext('2d');
@@ -673,7 +924,28 @@
   function rayonMeliza() { return rayonBase * meliza.taille; }
   function borne(v, min, max) { return v < min ? min : (v > max ? max : v); }
   function progression() { return borne(tempsJeu / DUREE_PARTIE, 0, 1); }
-  function dureeVieTouffe() { return VIE_DEPART + (VIE_FIN - VIE_DEPART) * progression(); }
+  function dureeVieTouffe() { return NIV.vieDepart + (NIV.vieFin - NIV.vieDepart) * progression(); }
+
+  // easeOutBack : apparition avec un petit dépassement, pour Hakim.
+  function recul(t) {
+    var c1 = 1.70158, c3 = c1 + 1, p = t - 1;
+    return 1 + c3 * p * p * p + c1 * p * p;
+  }
+
+  // Chemin d'un rectangle arrondi (roundRect n'est pas partout).
+  function cheminArrondi(c, x, y, l, h, r) {
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.lineTo(x + l - r, y);
+    c.quadraticCurveTo(x + l, y, x + l, y + r);
+    c.lineTo(x + l, y + h - r);
+    c.quadraticCurveTo(x + l, y + h, x + l - r, y + h);
+    c.lineTo(x + r, y + h);
+    c.quadraticCurveTo(x, y + h, x, y + h - r);
+    c.lineTo(x, y + r);
+    c.quadraticCurveTo(x, y, x + r, y);
+    c.closePath();
+  }
 
   // Générateur pseudo-aléatoire à graine : le décor reste stable au redimensionnement.
   function alea(graine) {
@@ -708,25 +980,55 @@
     var c = fondCtx;
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+    var pal = palette();
+
     // --- ciel ---
     var ciel = c.createLinearGradient(0, 0, 0, cielH);
-    ciel.addColorStop(0, '#6ec1e8');
-    ciel.addColorStop(0.65, '#a9ddf2');
-    ciel.addColorStop(1, '#ddf1fb');
+    ciel.addColorStop(0, pal.ciel[0]);
+    ciel.addColorStop(0.65, pal.ciel[1]);
+    ciel.addColorStop(1, pal.ciel[2]);
     c.fillStyle = ciel;
     c.fillRect(0, 0, largeur, cielH + 2);
 
-    // soleil doux
-    var soleil = c.createRadialGradient(largeur * 0.5, cielH * 0.44, 2,
-                                        largeur * 0.5, cielH * 0.44, cielH * 0.62);
-    soleil.addColorStop(0, 'rgba(255,250,214,.95)');
-    soleil.addColorStop(0.35, 'rgba(255,240,170,.42)');
-    soleil.addColorStop(1, 'rgba(255,240,170,0)');
-    c.fillStyle = soleil;
+    // --- étoiles (nuit) ---
+    if (pal.etoiles) {
+      var rndE = alea(424242);
+      var nbE = Math.round((largeur * cielH) / 2400);
+      for (var e = 0; e < nbE; e++) {
+        var ex = rndE() * largeur;
+        var ey = rndE() * cielH * 0.96;
+        var er = (0.6 + rndE() * 1.4) * u;
+        c.globalAlpha = 0.3 + rndE() * 0.7;
+        c.fillStyle = rndE() < 0.22 ? '#ffe9b0' : '#ffffff';
+        c.beginPath();
+        c.arc(ex, ey, er, 0, 6.2832);
+        c.fill();
+      }
+      c.globalAlpha = 1;
+    }
+
+    // --- astre : soleil couchant ou lune ---
+    var ax = largeur * pal.astre.x;
+    var ay = cielH * pal.astre.y;
+    var halo = c.createRadialGradient(ax, ay, 2, ax, ay, cielH * 0.66);
+    halo.addColorStop(0, pal.astre.teinte[0]);
+    halo.addColorStop(0.35, pal.astre.teinte[1]);
+    halo.addColorStop(1, pal.astre.teinte[2]);
+    c.fillStyle = halo;
     c.fillRect(0, 0, largeur, cielH + 2);
 
+    if (pal.astre.type === 'lune') {
+      var lr = cielH * 0.15;
+      c.fillStyle = '#f6f3e2';
+      c.beginPath(); c.arc(ax, ay, lr, 0, 6.2832); c.fill();
+      c.fillStyle = 'rgba(203,203,178,.5)';
+      c.beginPath(); c.arc(ax - lr * 0.3, ay - lr * 0.22, lr * 0.22, 0, 6.2832); c.fill();
+      c.beginPath(); c.arc(ax + lr * 0.28, ay + lr * 0.3, lr * 0.15, 0, 6.2832); c.fill();
+      c.beginPath(); c.arc(ax + lr * 0.06, ay - lr * 0.42, lr * 0.11, 0, 6.2832); c.fill();
+    }
+
     // --- colline lointaine ---
-    c.fillStyle = '#8ec96a';
+    c.fillStyle = pal.colline;
     c.beginPath();
     c.moveTo(0, cielH + 12);
     c.quadraticCurveTo(largeur * 0.5, cielH - 20, largeur, cielH + 10);
@@ -737,22 +1039,22 @@
 
     // petits bosquets sur la crête
     var rndArb = alea(77123);
-    c.fillStyle = '#79bb56';
+    c.fillStyle = pal.bosquet;
     var nbArb = Math.max(3, Math.round(largeur / 90));
     for (var a = 0; a < nbArb; a++) {
-      var ax = (a + 0.5) * (largeur / nbArb) + (rndArb() - 0.5) * 26;
-      var ay = cielH + 6 - Math.sin((ax / largeur) * Math.PI) * 22 + rndArb() * 4;
-      var ar = (5 + rndArb() * 4) * u;
+      var bx = (a + 0.5) * (largeur / nbArb) + (rndArb() - 0.5) * 26;
+      var by = cielH + 6 - Math.sin((bx / largeur) * Math.PI) * 22 + rndArb() * 4;
+      var br = (5 + rndArb() * 4) * u;
       c.beginPath();
-      c.arc(ax, ay, ar, 0, 6.2832);
+      c.arc(bx, by, br, 0, 6.2832);
       c.fill();
     }
 
     // --- pré ---
     var g = c.createLinearGradient(0, cielH, 0, hauteur);
-    g.addColorStop(0, '#a9e06b');
-    g.addColorStop(0.55, '#7cc94a');
-    g.addColorStop(1, '#4c9a2a');
+    g.addColorStop(0, pal.pre[0]);
+    g.addColorStop(0.55, pal.pre[1]);
+    g.addColorStop(1, pal.pre[2]);
 
     c.save();
     c.beginPath();
@@ -767,11 +1069,9 @@
     c.fillRect(0, 0, largeur, hauteur);
 
     // Bandes de tonte
-    c.globalAlpha = 0.055;
-    c.fillStyle = '#ffffff';
+    c.fillStyle = pal.bandes;
     var bande = Math.max(46, hauteur / 13);
     for (var y = cielH; y < hauteur; y += bande * 2) c.fillRect(0, y, largeur, bande);
-    c.globalAlpha = 1;
 
     // Fleurs
     var rnd = alea(20260929);
@@ -781,11 +1081,26 @@
       var fy = cielH + 24 + rnd() * Math.max(1, hauteur - cielH - 24);
       var fr = (2.2 + rnd() * 2.2) * u;
       var tirage = rnd();
-      if (tirage < 0.62) dessinerPaquerette(c, fx, fy, fr, rnd() * Math.PI);
-      else if (tirage < 0.86) dessinerBoutonDOr(c, fx, fy, fr);
-      else dessinerFleurRose(c, fx, fy, fr, rnd() * Math.PI);
+      if (pal.fleurs === 'automne') {
+        if (tirage < 0.7) dessinerFeuille(c, fx, fy, fr * 1.3, rnd() * 6.2832, rnd());
+        else if (tirage < 0.88) dessinerBoutonDOr(c, fx, fy, fr * 0.9);
+        else dessinerPaquerette(c, fx, fy, fr * 0.85, rnd() * Math.PI);
+      } else if (pal.fleurs === 'nuit') {
+        if (tirage < 0.72) dessinerFleurNuit(c, fx, fy, fr * 0.9, rnd() * Math.PI);
+        else dessinerPaquerette(c, fx, fy, fr * 0.8, rnd() * Math.PI);
+      } else {
+        if (tirage < 0.62) dessinerPaquerette(c, fx, fy, fr, rnd() * Math.PI);
+        else if (tirage < 0.86) dessinerBoutonDOr(c, fx, fy, fr);
+        else dessinerFleurRose(c, fx, fy, fr, rnd() * Math.PI);
+      }
     }
     c.restore();
+
+    // --- voile général (champ d'automne) ---
+    if (pal.teinte) {
+      c.fillStyle = pal.teinte;
+      c.fillRect(0, 0, largeur, hauteur);
+    }
   }
 
   function dessinerPaquerette(c, x, y, r, rotation) {
@@ -842,6 +1157,46 @@
     c.restore();
   }
 
+  // Feuille morte : le motif du champ d'automne.
+  function dessinerFeuille(c, x, y, r, rotation, teinte) {
+    c.save();
+    c.translate(x, y);
+    c.rotate(rotation);
+    c.globalAlpha = 0.85;
+    c.fillStyle = teinte < 0.34 ? '#d9662e' : (teinte < 0.67 ? '#e0912f' : '#c9a227');
+    c.beginPath();
+    c.moveTo(0, -r);
+    c.quadraticCurveTo(r * 0.85, -r * 0.15, 0, r);
+    c.quadraticCurveTo(-r * 0.85, -r * 0.15, 0, -r);
+    c.fill();
+    c.strokeStyle = 'rgba(120,60,15,.35)';
+    c.lineWidth = Math.max(0.8, r * 0.16);
+    c.beginPath();
+    c.moveTo(0, -r * 0.72);
+    c.lineTo(0, r * 0.72);
+    c.stroke();
+    c.restore();
+  }
+
+  // Petite fleur pâle qui luit doucement dans la nuit.
+  function dessinerFleurNuit(c, x, y, r, rotation) {
+    c.save();
+    c.translate(x, y);
+    c.rotate(rotation);
+    c.globalAlpha = 0.6;
+    c.fillStyle = '#cfe0ff';
+    for (var p = 0; p < 6; p++) {
+      c.beginPath();
+      c.ellipse(Math.cos(p * 1.0472) * r, Math.sin(p * 1.0472) * r, r * 0.6, r * 0.4, p * 1.0472, 0, 6.2832);
+      c.fill();
+    }
+    c.fillStyle = '#ffe9a8';
+    c.beginPath();
+    c.arc(0, 0, r * 0.42, 0, 6.2832);
+    c.fill();
+    c.restore();
+  }
+
   // ------------------------------------------------------------------
   //  Nuages
   // ------------------------------------------------------------------
@@ -873,6 +1228,7 @@
   }
 
   function dessinerNuages() {
+    var nuage = palette().nuage;
     ctx.save();
     ctx.beginPath();
     ctx.rect(0, 0, largeur, cielH + 2);
@@ -882,22 +1238,72 @@
       ctx.save();
       ctx.translate(n.x, n.y);
       ctx.scale(n.e, n.e);
-      ctx.globalAlpha = n.a;
-      ctx.fillStyle = '#ffffff';
+      ctx.globalAlpha = n.a * nuage.alpha;
+      ctx.fillStyle = nuage.clair;
       ctx.beginPath();
       ctx.arc(-26, 4, 17, 0, 6.2832);
       ctx.arc(-4, -7, 23, 0, 6.2832);
       ctx.arc(22, 2, 18, 0, 6.2832);
       ctx.arc(4, 11, 15, 0, 6.2832);
       ctx.fill();
-      ctx.globalAlpha = n.a * 0.5;
-      ctx.fillStyle = '#dceffb';
+      ctx.globalAlpha = n.a * 0.5 * nuage.alpha;
+      ctx.fillStyle = nuage.ombre;
       ctx.beginPath();
       ctx.ellipse(0, 12, 30, 8, 0, 0, 6.2832);
       ctx.fill();
       ctx.restore();
     }
     ctx.restore();
+  }
+
+  // ------------------------------------------------------------------
+  //  Lucioles : uniquement la nuit, pour animer le pré sombre
+  // ------------------------------------------------------------------
+  function creerLucioles() {
+    lucioles = [];
+    if (!palette().lucioles || !largeur || !hauteur) return;
+    var n = borne(Math.round((largeur * hauteur) / 90000), 6, 16);
+    for (var i = 0; i < n; i++) {
+      lucioles.push({
+        x: Math.random() * largeur,
+        y: cielH + 30 + Math.random() * Math.max(1, hauteur - cielH - 60),
+        phase: Math.random() * 6.2832,
+        vitesse: 0.4 + Math.random() * 0.9,
+        derive: (0.3 + Math.random() * 0.8) * 14 * u,
+        taille: (1.5 + Math.random() * 1.7) * u
+      });
+    }
+  }
+
+  function majLucioles(dt) {
+    for (var i = 0; i < lucioles.length; i++) {
+      var l = lucioles[i];
+      l.phase += dt * l.vitesse;
+      l.x += Math.sin(l.phase * 0.7) * l.derive * dt;
+      l.y += Math.cos(l.phase * 0.5) * l.derive * 0.6 * dt;
+      l.x = borne(l.x, 14, Math.max(14, largeur - 14));
+      l.y = borne(l.y, cielH + 14, Math.max(cielH + 14, hauteur - 14));
+    }
+  }
+
+  function dessinerLucioles() {
+    for (var i = 0; i < lucioles.length; i++) {
+      var l = lucioles[i];
+      var p = 0.3 + 0.7 * Math.abs(Math.sin(l.phase));
+      var r = l.taille * 3.4;
+      var halo = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, r);
+      halo.addColorStop(0, 'rgba(255,247,170,' + (0.8 * p).toFixed(3) + ')');
+      halo.addColorStop(0.45, 'rgba(214,255,140,' + (0.28 * p).toFixed(3) + ')');
+      halo.addColorStop(1, 'rgba(214,255,140,0)');
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(l.x, l.y, r, 0, 6.2832);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,253,214,' + (0.9 * p).toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.arc(l.x, l.y, l.taille * 0.8, 0, 6.2832);
+      ctx.fill();
+    }
   }
 
   // ------------------------------------------------------------------
@@ -920,6 +1326,7 @@
 
     creerFond();
     creerNuages();
+    creerLucioles();
 
     // Tout le monde reste dans le pré
     meliza.x = borne(meliza.x || largeur / 2, rayonBase, largeur - rayonBase);
@@ -928,7 +1335,7 @@
     meliza.cibleY = meliza.y;
     for (var i = 0; i < touffes.length; i++) {
       var t = touffes[i];
-      t.r = 13 * u;
+      t.r = (t.type === 'gateau' ? 15 : 13) * u;
       t.x = borne(t.x, margeCote, largeur - margeCote);
       t.y = borne(t.y, margeHaut, hauteur - margeBas);
     }
@@ -956,20 +1363,24 @@
   }
 
   function nouvelleTouffe(immediate) {
-    var r = 13 * u;
+    var gateau = Math.random() < NIV.chanceGateau;
+    var doree = !gateau && Math.random() < NIV.chanceDoree;
+    var type = gateau ? 'gateau' : (doree ? 'doree' : 'herbe');
+    var r = (gateau ? 15 : 13) * u;
     var x = largeur / 2, y = hauteur / 2, ok = false;
     for (var essai = 0; essai < 40 && !ok; essai++) {
       x = margeCote + Math.random() * Math.max(1, largeur - 2 * margeCote);
       y = margeHaut + Math.random() * Math.max(1, hauteur - margeHaut - margeBas);
       ok = placementLibre(x, y, r);
     }
-    var doree = Math.random() < CHANCE_DOREE;
-    var vieMax = dureeVieTouffe() * (doree ? 0.75 : 1);
+    var vieMax = dureeVieTouffe() * (type === 'herbe' ? 1 : (type === 'gateau' ? 0.85 : 0.75));
     return {
       x: x, y: y, r: r,
+      type: type,
       phase: Math.random() * 6.2832,
       apparition: immediate ? 1 : 0,
       doree: doree,
+      hakim: false,
       vie: 0, vieMax: vieMax, fane: false,
       graine: Math.random() * 6.2832
     };
@@ -999,8 +1410,15 @@
     var restant = t.vieMax - t.vie;
     var vieillissement = t.fane ? 1 : 1 - 0.14 * (t.vie / t.vieMax);
     var s = t.r * grossissement * vieillissement;
-    var balancement = Math.sin(tempsAnim * 1.8 + t.phase) * 0.12;
     var clignote = (!t.fane && restant < 1.4) ? 0.5 + 0.5 * Math.abs(Math.sin(tempsAnim * 9)) : 1;
+
+    if (t.type === 'gateau') { dessinerGateau(t, s, a, restant, clignote); return; }
+
+    var balancement = Math.sin(tempsAnim * 1.8 + t.phase) * 0.12;
+    // La cachette d'Hakim frémit plus fort que les autres touffes.
+    if (t.hakim && !t.fane) {
+      balancement *= 1.6 + 1.4 * Math.abs(Math.sin(tempsAnim * 5.4 + t.phase));
+    }
 
     ctx.save();
     ctx.translate(t.x, t.y);
@@ -1067,6 +1485,82 @@
         var scintille = 0.4 + 0.6 * Math.abs(Math.sin(tempsAnim * 5 + k * 1.7 + t.graine));
         dessinerEtoile(t.x + Math.cos(ang) * ray, t.y + Math.sin(ang) * ray * 0.7 - s * 0.6,
                        s * 0.42 * scintille, ang, 'rgba(255,247,214,.95)');
+      }
+    }
+
+    // Hakim remue : par bouffées, quelques brins s'agitent au-dessus de la touffe
+    if (t.hakim && !t.fane && a > 0.6) {
+      var bouffee = Math.sin(tempsAnim * 5.2 + t.phase);
+      if (bouffee > 0.5) {
+        ctx.save();
+        ctx.globalAlpha = (bouffee - 0.5) * 1.7 * clignote;
+        ctx.strokeStyle = '#2e2725';
+        ctx.lineWidth = Math.max(1.2, 1.9 * u);
+        ctx.lineCap = 'round';
+        for (var q = -1; q <= 1; q++) {
+          var qx = t.x + q * s * 0.78 + Math.sin(tempsAnim * 9 + q) * s * 0.14;
+          ctx.beginPath();
+          ctx.moveTo(qx, t.y - s * 1.45);
+          ctx.lineTo(qx + s * 0.18, t.y - s * 2.15);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------
+  //  Gâteau 🍰 : plus rare que l'herbe, il vaut 5 points
+  // ------------------------------------------------------------------
+  function dessinerGateau(t, s, a, restant, clignote) {
+    var pulsation = 0.8 + 0.2 * Math.sin(tempsAnim * 4 + t.graine);
+
+    ctx.save();
+    ctx.translate(t.x, t.y);
+    ctx.globalAlpha = clignote;
+
+    // halo gourmand
+    var halo = ctx.createRadialGradient(0, 0, 0, 0, 0, s * 2.8 * pulsation);
+    halo.addColorStop(0, 'rgba(255,214,236,.6)');
+    halo.addColorStop(0.5, 'rgba(255,209,102,.25)');
+    halo.addColorStop(1, 'rgba(255,209,102,0)');
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(0, 0, s * 2.8 * pulsation, 0, 6.2832);
+    ctx.fill();
+
+    // ombre au sol
+    ctx.fillStyle = 'rgba(30,60,15,.18)';
+    ctx.beginPath();
+    ctx.ellipse(0, s * 0.52, s * 0.95, s * 0.34, 0, 0, 6.2832);
+    ctx.fill();
+
+    // anneau de fraîcheur
+    if (!t.fane && restant < t.vieMax * 0.62) {
+      var frac = borne(restant / t.vieMax, 0, 1);
+      ctx.strokeStyle = 'rgba(255,253,247,.8)';
+      ctx.lineWidth = Math.max(1.6, 2.4 * u);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(0, s * 0.4, s * 1.2, -1.5708, -1.5708 + 6.2832 * frac);
+      ctx.stroke();
+    }
+
+    // le gâteau lui-même, en emoji, qui flotte doucement
+    ctx.font = Math.round(s * 2.1) + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",system-ui,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🍰', 0, Math.sin(tempsAnim * 2.4 + t.phase) * s * 0.1);
+    ctx.restore();
+
+    // étincelles
+    if (a > 0.5) {
+      for (var k = 0; k < 3; k++) {
+        var ang = -tempsAnim * 1.4 + t.graine + k * 2.0944;
+        var ray = s * 1.8;
+        var scintille = 0.4 + 0.6 * Math.abs(Math.sin(tempsAnim * 4 + k * 1.7 + t.graine));
+        dessinerEtoile(t.x + Math.cos(ang) * ray, t.y + Math.sin(ang) * ray * 0.6 - s * 0.3,
+                       s * 0.4 * scintille, ang, 'rgba(255,247,214,.95)');
       }
     }
   }
@@ -1300,6 +1794,129 @@
   }
 
   // ------------------------------------------------------------------
+  //  Hakim : il se cache derrière une touffe, sort quand on la broute,
+  //  puis va se cacher ailleurs quelques secondes plus tard.
+  // ------------------------------------------------------------------
+  function cacherHakim() {
+    hakim.visible = false;
+    hakim.t = 0;
+  }
+
+  // Désigne une nouvelle touffe comme cachette (une seule à la fois).
+  function choisirCacheHakim() {
+    var i, candidats = [];
+    for (i = 0; i < touffes.length; i++) {
+      var t = touffes[i];
+      if (t.fane || t.apparition < 0.95 || t.type === 'gateau') continue;
+      candidats.push(t);
+    }
+    if (!candidats.length) return;
+    for (i = 0; i < touffes.length; i++) touffes[i].hakim = false;
+    candidats[Math.floor(Math.random() * candidats.length)].hakim = true;
+  }
+
+  // Il doit toujours y avoir une cachette, sauf pendant qu'Hakim est sorti.
+  function verifierCacheHakim() {
+    if (hakim.visible) return;
+    for (var i = 0; i < touffes.length; i++) {
+      if (touffes[i].hakim && !touffes[i].fane) return;
+    }
+    choisirCacheHakim();
+  }
+
+  function revelerHakim(t) {
+    score += POINTS_HAKIM;
+    hakim.visible = true;
+    hakim.x = t.x;
+    hakim.y = t.y;
+    hakim.t = DUREE_HAKIM;
+    hakim.duree = DUREE_HAKIM;
+    hakim.phase = Math.random() * 6.2832;
+    for (var i = 0; i < touffes.length; i++) touffes[i].hakim = false;
+
+    ajouterParticules(t.x, t.y, t.r * 1.3, ['#ffd94a', '#fff3cf', '#5b8fd6']);
+    bulles.push({ x: t.x, y: t.y - t.r * 1.8, texte: '+' + POINTS_HAKIM,
+                  couleur: '#a5700f', vie: 0, duree: 1.3, taille: 1.5 });
+    clignoterPastille(pastScore, 'gain', 520);
+    sonHakim();
+    vibrer([18, 40, 18, 40, 45]);
+  }
+
+  function dessinerHakim() {
+    if (!hakim.visible) return;
+    var r = 13 * u;
+    var taille = r * 3.6;
+    var ecoule = hakim.duree - hakim.t;
+    var entree = borne(ecoule / 0.34, 0, 1);
+    var sortie = borne(hakim.t / 0.4, 0, 1);
+    var echelle = recul(entree) * (0.72 + 0.28 * sortie);
+    var alpha = Math.min(1, entree * 2.2) * sortie;
+    var saut = (1 - borne(ecoule / 0.5, 0, 1)) * r * 1.6;
+    var pied = r * 0.55;
+    var balance = Math.sin(tempsAnim * 4 + hakim.phase) * r * 0.09;
+    var bas = hakim.y + pied - saut;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    // ombre au sol
+    ctx.fillStyle = 'rgba(30,60,15,.24)';
+    ctx.beginPath();
+    ctx.ellipse(hakim.x, hakim.y + pied, taille * 0.3, taille * 0.1, 0, 0, 6.2832);
+    ctx.fill();
+
+    // le personnage
+    ctx.save();
+    ctx.translate(hakim.x + balance, bas);
+    ctx.scale(echelle, echelle);
+    if (hakimPrete) {
+      ctx.drawImage(imageHakim, -taille / 2, -taille, taille, taille);
+    } else {
+      ctx.font = Math.round(taille * 0.75) + 'px "Apple Color Emoji","Segoe UI Emoji",system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🧑', 0, -taille * 0.45);
+    }
+    ctx.restore();
+
+    // bulle « Hakim ! »
+    var texte = 'Hakim !';
+    var haut = 26 * u;
+    ctx.font = '800 ' + Math.round(15 * u) + 'px system-ui, sans-serif';
+    var larg = ctx.measureText(texte).width + 26 * u;
+    var bx = hakim.x - larg / 2;
+    var by = bas - taille - haut - 8 * u;
+    var puls = 1 + 0.05 * Math.sin(tempsAnim * 8);
+
+    ctx.save();
+    ctx.translate(hakim.x, by + haut / 2);
+    ctx.scale(puls, puls);
+    ctx.translate(-hakim.x, -(by + haut / 2));
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = Math.max(2, 3 * u);
+    ctx.strokeStyle = '#2e2725';
+    ctx.fillStyle = '#fff3cf';
+    cheminArrondi(ctx, bx, by, larg, haut, haut / 2);
+    ctx.fill();
+    ctx.stroke();
+    // la queue de la bulle
+    ctx.beginPath();
+    ctx.moveTo(hakim.x - 6 * u, by + haut - 2);
+    ctx.lineTo(hakim.x, by + haut + 9 * u);
+    ctx.lineTo(hakim.x + 6 * u, by + haut - 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#a5700f';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(texte, hakim.x, by + haut / 2 + 1);
+    ctx.restore();
+
+    ctx.restore();
+  }
+
+  // ------------------------------------------------------------------
   //  Effets
   // ------------------------------------------------------------------
   function ajouterParticules(x, y, r, couleurs) {
@@ -1351,11 +1968,11 @@
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = '800 ' + Math.round(17 * u) + 'px system-ui, sans-serif';
     ctx.lineWidth = Math.max(2, 3.5 * u);
     ctx.strokeStyle = 'rgba(255,253,247,.95)';
     for (i = 0; i < bulles.length; i++) {
       var b = bulles[i];
+      ctx.font = '800 ' + Math.round(17 * u * (b.taille || 1)) + 'px system-ui, sans-serif';
       ctx.globalAlpha = Math.min(1, 2.2 * (1 - b.vie / b.duree));
       ctx.fillStyle = b.couleur || '#2f6b1c';
       ctx.strokeText(b.texte, b.x, b.y);
@@ -1371,7 +1988,64 @@
     if (score !== dernierScoreVu) {
       dernierScoreVu = score;
       elScore.textContent = String(score);
+      majPastilleNiveau(false);
     }
+  }
+
+  function majPastilleNiveau(gain) {
+    elNiveau.textContent = 'Niveau ' + NIV.niveau;
+    var reste = Math.max(0, seuilNiveau(NIV.niveau + 1) - score);
+    elNiveauCible.textContent = '→ ' + reste + ' pts';
+    if (gain) clignoterPastille(pastNiveau, 'gain', 800);
+  }
+
+  // Applique le décor du niveau courant à la page (fond, barre du navigateur).
+  function appliquerDecor() {
+    var couleur = NIV.decor.fond;
+    if (document.body && document.body.style) document.body.style.background = couleur;
+    var meta = document.getElementById('metaTheme');
+    if (meta) meta.setAttribute('content', couleur);
+  }
+
+  function annoncerNiveau() {
+    elAnnonceTitre.textContent = 'Niveau ' + NIV.niveau + ' !';
+    elAnnonceSous.textContent = NIV.decor.nom;
+    elAnnonceEmoji.textContent = NIV.decor.emoji;
+    elAnnonce.hidden = false;
+    elAnnonce.classList.remove('visible');
+    void elAnnonce.offsetWidth;          // force le navigateur à rejouer l'animation
+    elAnnonce.classList.add('visible');
+  }
+
+  function cacherAnnonce() {
+    elAnnonce.hidden = true;
+    elAnnonce.classList.remove('visible');
+  }
+
+  function monterNiveau() {
+    reglerNiveau(NIV.niveau + 1);
+    appliquerDecor();
+    creerNuages();
+    creerLucioles();
+    creerFond();
+
+    transition = DUREE_TRANSITION;
+    annoncerNiveau();
+    majPastilleNiveau(true);
+    sonNiveau();
+    vibrer([30, 45, 30, 45, 90]);
+
+    // une pluie de confettis pour fêter le décor tout neuf
+    for (var i = 0; i < 3; i++) {
+      ajouterParticules(largeur * (0.2 + 0.3 * i), hauteur * 0.34, 15 * u,
+                        ['#ffd94a', '#fff3cf', '#68c23f', '#f6a8c0', '#8ec6ff']);
+    }
+  }
+
+  function verifierNiveau() {
+    if (!enCours) return;
+    var garde = 0;
+    while (score >= seuilNiveau(NIV.niveau + 1) && garde++ < 12) monterNiveau();
   }
 
   function clignoterPastille(el, classe, duree) {
@@ -1402,12 +2076,14 @@
     meliza.angleCible = -Math.PI / 2;
     particules = []; bulles = []; touffes = []; obstacles = [];
     secousse = 0; flashRouge = 0;
-    tempsProchainObstacle = 4;
+    cacherHakim();
+    tempsProchainObstacle = Math.max(2, NIV.delaiObstacle);
     for (var i = 0; i < NB_TOUFFES; i++) touffes.push(nouvelleTouffe(true));
-    for (var j = 0; j < OBSTACLES_DEPART; j++) {
+    for (var j = 0; j < NIV.obstaclesDepart; j++) {
       var o = ajouterObstacle();
       o.apparition = 1;
     }
+    choisirCacheHakim();
     dernierChronoVu = -1; dernierScoreVu = -1;
     majScore();
     majChrono(true);
@@ -1415,6 +2091,13 @@
 
   function demarrer() {
     reveillerAudio();
+    reglerNiveau(1);
+    appliquerDecor();
+    creerNuages();
+    creerLucioles();
+    creerFond();
+    transition = 0;
+    cacherAnnonce();
     reinitialiser();
     ecranAccueil.classList.add('cache');
     ecranFin.classList.add('cache');
@@ -1427,12 +2110,16 @@
     enCours = false;
     meliza.bouge = 0;
     pointeurActif = false;
+    transition = 0;
+    cacherAnnonce();
+    cacherHakim();
 
     recordBattu = score > record && score > 0;
     if (score > record) { record = score; ecrireRecord(record); }
 
     elScoreFin.textContent = String(score);
     elRecordFin.textContent = String(record);
+    elNiveauFin.textContent = String(NIV.niveau);
     elMessageRecord.hidden = !recordBattu;
     elHakim.hidden = !recordBattu;
     carteFin.classList.toggle('fete', recordBattu);
@@ -1446,29 +2133,37 @@
 
   function manger(index) {
     var t = touffes[index];
-    var gain = t.doree ? POINTS_DOREE : 1;
+    var type = t.type || 'herbe';
+    var cacheHakim = t.hakim;
+    var gain = type === 'gateau' ? POINTS_GATEAU : (type === 'doree' ? POINTS_DOREE : 1);
+    var precieux = type !== 'herbe';
 
     score += gain;
     if (score > record && !fanfareJouee) { fanfareJouee = true; sonRecord(); }
 
-    meliza.taille = Math.min(TAILLE_MAX, meliza.taille + GAIN_TAILLE * (t.doree ? 1.8 : 1));
+    meliza.taille = Math.min(TAILLE_MAX, meliza.taille + GAIN_TAILLE * (type === 'gateau' ? 1.6 : (type === 'doree' ? 1.8 : 1)));
     meliza.machage = 1;
     ajouterParticules(t.x, t.y, t.r,
-      t.doree ? ['#ffd94a', '#f0b429', '#fff3cf'] : ['#3c8222', '#68c23f', '#57b83a']);
+      type === 'gateau' ? ['#f6a8c0', '#fff3cf', '#ffd94a']
+                        : (type === 'doree' ? ['#ffd94a', '#f0b429', '#fff3cf']
+                                            : ['#3c8222', '#68c23f', '#57b83a']));
     bulles.push({
       x: t.x, y: t.y - t.r,
       texte: '+' + gain,
-      couleur: t.doree ? '#a5700f' : '#2f6b1c',
+      couleur: type === 'gateau' ? '#b8467a' : (type === 'doree' ? '#a5700f' : '#2f6b1c'),
       vie: 0, duree: 0.7
     });
 
-    sonCroc(t.doree);
-    vibrer(t.doree ? 22 : 12);
-    if (t.doree) clignoterPastille(pastScore, 'gain', 420);
+    sonCroc(precieux);
+    vibrer(precieux ? 22 : 12);
+    if (precieux) clignoterPastille(pastScore, 'gain', 420);
 
-    majScore();
     touffes.splice(index, 1);
     touffes.push(nouvelleTouffe(false));
+    if (cacheHakim) revelerHakim(t);      // Hakim sort de sa cachette
+
+    majScore();
+    verifierNiveau();
   }
 
   function penaliteTemps(secondes) {
@@ -1555,12 +2250,12 @@
     }
 
     if (!enCours) return;
-    var cible = OBSTACLES_DEPART +
-                Math.floor(progression() * (OBSTACLES_MAX - OBSTACLES_DEPART));
+    var cible = NIV.obstaclesDepart +
+                Math.floor(progression() * Math.max(1, NIV.obstaclesMax - NIV.obstaclesDepart));
     if (obstacles.length < cible) {
       tempsProchainObstacle -= dt;
       if (tempsProchainObstacle <= 0) {
-        tempsProchainObstacle = 3.5;
+        tempsProchainObstacle = NIV.delaiObstacle;
         ajouterObstacle();
       }
     }
@@ -1569,11 +2264,21 @@
   function maj(dt) {
     tempsAnim += dt;
     majNuages(dt);
+    majLucioles(dt);
     majTouffes(dt);
     majObstacles(dt);
     majEffets(dt);
 
     if (!enCours) {
+      meliza.bouge = Math.max(0, meliza.bouge - dt * 6);
+      meliza.machage = Math.max(0, meliza.machage - dt * 2.6);
+      return;
+    }
+
+    // Pendant l'annonce « Niveau 2 ! », le temps est suspendu
+    if (transition > 0) {
+      transition -= dt;
+      if (transition <= 0) { transition = 0; cacherAnnonce(); }
       meliza.bouge = Math.max(0, meliza.bouge - dt * 6);
       meliza.machage = Math.max(0, meliza.machage - dt * 2.6);
       return;
@@ -1620,6 +2325,14 @@
       if (Math.hypot(t.x - meliza.x, t.y - meliza.y) < portee + t.r * 0.6) manger(j);
     }
 
+    // Hakim : sorti quelques secondes, puis il retourne se cacher ailleurs
+    if (hakim.visible) {
+      hakim.t -= dt;
+      if (hakim.t <= 0) cacherHakim();
+    } else {
+      verifierCacheHakim();
+    }
+
     // Se cogner
     for (var k = 0; k < obstacles.length; k++) {
       var o = obstacles[k];
@@ -1653,6 +2366,7 @@
 
     ctx.drawImage(fond, 0, 0, largeur, hauteur);
     dessinerNuages();
+    dessinerLucioles();
 
     // Tri par profondeur : ce qui est plus bas passe devant
     elements.length = 0;
@@ -1661,6 +2375,7 @@
     for (i = 0; i < obstacles.length; i++) {
       if (obstacles[i].apparition > 0) elements.push({ y: obstacles[i].y, t: 1, o: obstacles[i] });
     }
+    if (hakim.visible) elements.push({ y: hakim.y, t: 3, o: null });
     elements.push({ y: meliza.y, t: 2, o: null });
     elements.sort(function (a, b) { return a.y - b.y; });
 
@@ -1668,7 +2383,8 @@
       var e = elements[i];
       if (e.t === 0) dessinerTouffe(e.o);
       else if (e.t === 1) dessinerObstacle(e.o);
-      else dessinerMeliza();
+      else if (e.t === 2) dessinerMeliza();
+      else dessinerHakim();
     }
 
     dessinerEffets();
@@ -1795,6 +2511,8 @@
   elRecordAccueil.textContent = String(record);
   elRecordFin.textContent = String(record);
 
+  reglerNiveau(1);
+  appliquerDecor();
   redimensionner();
   reinitialiser();
   window.requestAnimationFrame(boucle);
